@@ -12,19 +12,16 @@
 #  make package (builds distribution tarfile)
 # ======================================================================
 
+# Required to keep CMake happy.
+cmake_minimum_required(VERSION ${CMAKE_VERSION} FATAL_ERROR)
+# Actual version requirement.
+cmake_policy(VERSION 3.4)
 
-# ----------------------------------------------------------------------
-# Describe build tool requirements:
+# Project information.
+project(hep_concurrency VERSION 1.00.02 LANGUAGES CXX)
 
-cmake_minimum_required(VERSION 2.8)  # use cmake 2.8 or later
-
-# ----------------------------------------------------------------------
-# Describe product:
-
-project(hep_concurrency)
-
-# cetbuildtools contains our cmake modules
-find_package(cetbuildtools REQUIRED)
+# cetmodules contains our cmake modules
+find_package(cetmodules REQUIRED)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -39,24 +36,11 @@ cet_report_compiler_flags()
 
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
-
-find_ups_product(cetbuildtools v6_00_00)
-find_ups_product(cppunit)
-find_ups_product(tbb)
-
-# define cppunit
-cet_find_library(CPPUNIT NAMES cppunit   PATHS ENV CPPUNIT_LIB   NO_DEFAULT_PATH)
+find_package(cppunit REQUIRED)
+find_package(tbb
 
 # ----------------------------------------------------------------------
 # Describe source tree layout:
 
 add_subdirectory(${PROJECT_NAME})  # source code
 add_subdirectory(ups)              # ups files
-
-# ----------------------------------------------------------------------
-# Packaging utility
-
-include(UseCPack)
-
-#
-# ======================================================================
