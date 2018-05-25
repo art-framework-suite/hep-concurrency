@@ -36,9 +36,10 @@ cet_report_compiler_flags()
 
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
-find_package(cppunit REQUIRED)
-find_package(tbb
 
+cet_find_library(CPPUNIT NAMES cppunit REQUIRED)
+find_package(TBB COMPONENTS tbb REQUIRED)
+set(TBB "TBB::tbb")
 # ----------------------------------------------------------------------
 # Describe source tree layout:
 
