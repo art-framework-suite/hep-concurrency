@@ -14,7 +14,7 @@ cet_make_library(
     WaitingTaskList.cc
     tsan.cc
   LIBRARIES
-    ${TBB}
+    TBB::tbb
 )
 
 install_headers()

@@ -1,6 +1,6 @@
 #include(CetTest)
 
-#set(source_libraries hep_concurrency ${CPPUNIT} ${TBB} pthread)
+#set(source_libraries hep_concurrency ${CPPUNIT} TBB::tbb pthread)
 
 #cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
 #cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)

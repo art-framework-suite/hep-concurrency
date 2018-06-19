@@ -39,7 +39,6 @@ cet_report_compiler_flags()
 
 cet_find_library(CPPUNIT NAMES cppunit REQUIRED)
 find_package(TBB COMPONENTS tbb REQUIRED)
-set(TBB "TBB::tbb")
 # ----------------------------------------------------------------------
 # Describe source tree layout:
 
