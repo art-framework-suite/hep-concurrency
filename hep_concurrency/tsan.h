@@ -92,8 +92,8 @@ namespace hep {
     }                                                                          \
   }
 
-  // Local Variables:
-  // mode: c++
-  // End:
+// Local Variables:
+// mode: c++
+// End:
 
 #endif /* hep_concurrency_tsan_h */
