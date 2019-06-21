@@ -79,7 +79,6 @@ cet_report_compiler_flags()
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
-find_ups_product(cetbuildtools v6_00_00)
 find_ups_product(cppunit)
 find_ups_product(tbb)
 
