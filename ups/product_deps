@@ -1,5 +1,5 @@
-parent hep_concurrency v1_03_04
-defaultqual e17
+parent hep_concurrency v1_04_00
+defaultqual e19
 #
 incdir fq_dir include
 libdir fq_dir lib
@@ -8,23 +8,17 @@ fcldir -
 # define product/version pairs
 product version
 cppunit         v1_14_0
-gcc             v7_3_0          e17
 gcc             v8_2_0          e19
-clang           v5_0_1          c2
 clang           v7_0_0          c7
 tbb             v2019_3
-cetbuildtools   v7_13_02        -       only_for_build
+cetbuildtools   v7_14_00        -       only_for_build
 end_product_list
 
 
 # Matrix of qualifiers versus dependent products
 qualifier       cppunit    gcc  clang   tbb         compiler     notes
-e17:debug       e17:debug  -nq- -       e17:debug   gcc
-e17:prof        e17:prof   -nq- -       e17:prof    gcc
 e19:debug       e19:debug  -nq- -       e19:debug   gcc
 e19:prof        e19:prof   -nq- -       e19:prof    gcc
-c2:debug        c2:debug   -    -nq-    c2:debug    clang
-c2:prof         c2:prof    -    -nq-    c2:prof     clang
 c7:debug        c7:debug   -    -nq-    c7:debug    clang
 c7:prof         c7:prof    -    -nq-    c7:prof     clang
 end_qualifier_list
