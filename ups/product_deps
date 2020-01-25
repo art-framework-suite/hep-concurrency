@@ -11,7 +11,7 @@ cppunit         v1_14_0
 gcc             v8_2_0          e19
 clang           v7_0_0          c7
 tbb             v2019_3
-cetbuildtools   v7_15_00        -       only_for_build
+cetbuildtools   v7_15_01        -       only_for_build
 end_product_list
 
 
