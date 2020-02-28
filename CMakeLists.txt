@@ -12,16 +12,8 @@
 #  make package (builds distribution tarfile)
 # ======================================================================
 
-
-# ----------------------------------------------------------------------
-# Describe build tool requirements:
-
-cmake_minimum_required(VERSION 2.8)  # use cmake 2.8 or later
-
-# ----------------------------------------------------------------------
-# Describe product:
-
-project(hep_concurrency)
+cmake_minimum_required(VERSION 3.14..3.14 FATAL_ERROR)
+project(hep_concurrency LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
