@@ -10,91 +10,89 @@
 
 using namespace std;
 
-namespace hep {
-  namespace concurrency {
+namespace hep::concurrency {
 
-    SerialTaskQueue::~SerialTaskQueue()
+  SerialTaskQueue::~SerialTaskQueue()
+  {
+    ANNOTATE_THREAD_IGNORE_BEGIN;
+    delete taskQueue_;
+    taskQueue_ = nullptr;
+    ANNOTATE_THREAD_IGNORE_END;
+  }
+
+  SerialTaskQueue::SerialTaskQueue()
+  {
+    taskQueue_ = new queue<tbb::task*>;
+    pauseCount_ = 0;
+    taskRunning_ = false;
+  }
+
+  bool
+  SerialTaskQueue::pause()
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    auto ret = false;
     {
-      ANNOTATE_THREAD_IGNORE_BEGIN;
-      delete taskQueue_;
-      taskQueue_ = nullptr;
-      ANNOTATE_THREAD_IGNORE_END;
+      ret = (++pauseCount_ == 1);
     }
+    return ret;
+  }
 
-    SerialTaskQueue::SerialTaskQueue()
+  bool
+  SerialTaskQueue::resume()
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    bool ret = false;
     {
-      taskQueue_ = new queue<tbb::task*>;
-      pauseCount_ = 0;
-      taskRunning_ = false;
-    }
-
-    bool
-    SerialTaskQueue::pause()
-    {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      auto ret = false;
-      {
-        ret = (++pauseCount_ == 1);
-      }
-      return ret;
-    }
-
-    bool
-    SerialTaskQueue::resume()
-    {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      bool ret = false;
-      {
-        if (--pauseCount_ == 0) {
-          tbb::task* nt = pickNextTask();
-          if (nt != nullptr) {
-            tbb::task::spawn(*nt);
-          }
-          ret = true;
-        }
-      }
-      return ret;
-    }
-
-    void
-    SerialTaskQueue::pushTask(tbb::task* tsk)
-    {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      if (tsk != nullptr) {
-        taskQueue_->push(tsk);
+      if (--pauseCount_ == 0) {
         tbb::task* nt = pickNextTask();
         if (nt != nullptr) {
           tbb::task::spawn(*nt);
         }
+        ret = true;
       }
     }
+    return ret;
+  }
 
-    tbb::task*
-    SerialTaskQueue::notify()
+  void
+  SerialTaskQueue::pushTask(tbb::task* tsk)
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    if (tsk != nullptr) {
+      taskQueue_->push(tsk);
+      tbb::task* nt = pickNextTask();
+      if (nt != nullptr) {
+        tbb::task::spawn(*nt);
+      }
+    }
+  }
+
+  tbb::task*
+  SerialTaskQueue::notify()
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    tbb::task* ret = nullptr;
     {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      tbb::task* ret = nullptr;
-      {
-        taskRunning_ = false;
-        ret = pickNextTask();
-      }
-      return ret;
+      taskRunning_ = false;
+      ret = pickNextTask();
     }
+    return ret;
+  }
 
-    tbb::task*
-    SerialTaskQueue::pickNextTask()
-    {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      tbb::task* ret = nullptr;
-      if ((pauseCount_ == 0) && !taskRunning_) {
-        if (!taskQueue_->empty()) {
-          ret = taskQueue_->front();
-          taskQueue_->pop();
-          taskRunning_ = true;
-        }
+  tbb::task*
+  SerialTaskQueue::pickNextTask()
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    tbb::task* ret = nullptr;
+    if ((pauseCount_ == 0) && !taskRunning_) {
+      if (!taskQueue_->empty()) {
+        ret = taskQueue_->front();
+        taskQueue_->pop();
+        taskRunning_ = true;
       }
-      return ret;
     }
+    return ret;
+  }
 
-  } // namespace concurrency
-} // namespace hep
+} // namespace hep::concurrency
