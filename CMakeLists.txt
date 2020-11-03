@@ -12,11 +12,15 @@
 #  make package (builds distribution tarfile)
 # ======================================================================
 
-cmake_minimum_required(VERSION 3.12...3.14 FATAL_ERROR)
-project(hep_concurrency LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
+cmake_policy(VERSION 3.14)
+# Policy CMP0096 must be set to NEW to preserve leading zeros in the
+# VERSION set by project().
+cmake_policy(SET CMP0096 NEW)
+find_package(cetmodules 2.00.01)
+project(hep_concurrency VERSION 1.05.00 LANGUAGES CXX)
 
-# cetbuildtools contains our cmake modules
-find_package(cetbuildtools REQUIRED)
+# cetbuildtools contains our cmake modules ### MIGRATE-ACTION-REQUIRED: remove
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -71,22 +75,21 @@ cet_report_compiler_flags()
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
-find_ups_product(cppunit)
-find_ups_product(tbb)
+find_ups_product(cppunit) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
+find_ups_product(tbb) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
 
 # define cppunit
-cet_find_library(CPPUNIT NAMES cppunit   PATHS ENV CPPUNIT_LIB   NO_DEFAULT_PATH)
+cet_find_library(CPPUNIT NAMES cppunit   PATHS ENV CPPUNIT_LIB   NO_DEFAULT_PATH) ### MIGRATE-ACTION-RECOMMENDED: use of ENV ... may be UPS-dependent ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
 
 # ----------------------------------------------------------------------
 # Describe source tree layout:
 
 add_subdirectory(${PROJECT_NAME})  # source code
-add_subdirectory(ups)              # ups files
 
 # ----------------------------------------------------------------------
 # Packaging utility
 
-include(UseCPack)
 
 #
 # ======================================================================
+cet_cmake_config(COMPATIBILITY SameMajorVersion)
