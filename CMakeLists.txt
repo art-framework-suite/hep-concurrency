@@ -75,6 +75,8 @@ cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
+find_ups_product(catch) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
+find_ups_product(cetlib_except) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
 find_ups_product(cppunit) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
 find_ups_product(tbb) ### MIGRATE-ACTION-RECOMMENDED: use cet_find_package() with target semantics for linking
 
