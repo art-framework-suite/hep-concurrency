@@ -1,4 +1,9 @@
-#include(CetTest)
+include(CetTest)
+cet_enable_asserts()
+
+cet_test(cache_handle_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
+cet_test(cache_mt_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
+cet_test(cache_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
 
 #set(source_libraries hep_concurrency ${CPPUNIT} ${TBB} pthread)
 

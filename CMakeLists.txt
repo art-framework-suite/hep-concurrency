@@ -71,10 +71,12 @@ cet_report_compiler_flags()
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
+find_ups_product(catch v2_3_0)
+find_ups_product(cetlib_except)
 find_ups_product(cppunit)
 find_ups_product(tbb)
 
-# define cppunit
+# cppunit
 cet_find_library(CPPUNIT NAMES cppunit   PATHS ENV CPPUNIT_LIB   NO_DEFAULT_PATH)
 
 # ----------------------------------------------------------------------
