@@ -11,13 +11,13 @@
 #  make install
 #  make package (builds distribution tarfile)
 # ======================================================================
-
 cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
+
 cmake_policy(VERSION 3.14)
 # Policy CMP0096 must be set to NEW to preserve leading zeros in the
 # VERSION set by project().
 cmake_policy(SET CMP0096 NEW)
-find_package(cetmodules 2.00.01)
+find_package(cetmodules 2.02.00 REQUIRED)
 project(hep_concurrency VERSION 1.05.00 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules ### MIGRATE-ACTION-REQUIRED: remove
@@ -70,7 +70,7 @@ set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} -fsaniti
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=thread -D__SANITIZE_THREAD__")
 endif()
 
-cet_report_compiler_flags()
+cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
