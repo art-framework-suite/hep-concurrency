@@ -25,20 +25,20 @@
 #include <iostream>
 #include <string>
 
-namespace cet::detail {
+namespace hep::concurrency::detail {
 
-  class ThreadCounter {
+  class thread_counter {
   public:
-    explicit ThreadCounter(char const* filename,
-                           unsigned const linenum,
-                           char const* funcname)
+    explicit thread_counter(char const* filename,
+                            unsigned const linenum,
+                            char const* funcname)
       : filename_{filename}, linenum_{linenum}, funcname_{funcname}
     {}
 
-    class Sentry {
+    class sentry {
     public:
-      ~Sentry() noexcept { --tc_.counter_; }
-      Sentry(ThreadCounter& tc, bool const terminate = true) : tc_{tc}
+      ~sentry() noexcept { --tc_.counter_; }
+      sentry(thread_counter& tc, bool const terminate = true) : tc_{tc}
       {
         if (++tc_.counter_ == 1u) {
           return;
@@ -52,7 +52,7 @@ namespace cet::detail {
       }
 
     private:
-      ThreadCounter& tc_;
+      thread_counter& tc_;
     };
 
   private:
@@ -62,14 +62,15 @@ namespace cet::detail {
     std::atomic<unsigned> counter_{0u};
   };
 
-} // namespace cet::detail
+} // namespace hep::concurrency::detail
 
 #ifdef NDEBUG
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()
 #else // NDEBUG
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()                               \
-  static cet::detail::ThreadCounter s_tc_{__FILE__, __LINE__, __func__};       \
-  cet::detail::ThreadCounter::Sentry sentry_tc_ { s_tc_ }
+  static hep::concurrency::detail::thread_counter s_tc_{                       \
+    __FILE__, __LINE__, __func__};                                             \
+  hep::concurrency::detail::thread_counter::sentry sentry_tc_ { s_tc_ }
 #endif // NDEBUG
 
 #endif /* hep_concurrency_assert_only_one_thread_h */
