@@ -16,27 +16,20 @@
 #include <type_traits>
 
 namespace hep::concurrency::detail {
-  template <typename T>
-  struct returns_bool : std::false_type {};
+  template <typename Key, typename T>
+  using expression_t =
+    decltype(std::declval<Key const>().supports(std::declval<T>()));
 
-  template <typename T, typename... Args>
-  struct returns_bool<bool (T::*)(Args...) const> : std::true_type {};
+  template <typename Key, typename T, typename = void>
+  struct valid_supports_expression : std::false_type {};
 
-  template <typename T, typename... Args>
-  struct returns_bool<bool (T::*)(Args...) const noexcept> : std::true_type {};
+  template <typename Key, typename T>
+  struct valid_supports_expression<Key, T, std::void_t<expression_t<Key, T>>>
+    : std::true_type {};
 
-  template <typename T, typename = void>
-  struct has_supports : std::false_type {};
-
-  template <typename T>
-  struct has_supports<T, std::void_t<decltype(&T::supports)>> : std::true_type {
-    static_assert(returns_bool<decltype(&T::supports)>::value,
-                  "The 'supports' function must be const-qualified and return "
-                  "a boolean value.");
-  };
-
-  template <typename T>
-  constexpr bool has_supports_fcn_v = has_supports<T>::value;
+  template <typename Key, typename T>
+  constexpr bool valid_supports_expression_v =
+    valid_supports_expression<Key, T>::value;
 }
 
 #endif /* hep_concurrency_detail_cache_key_supports_h */
