@@ -1,5 +1,5 @@
-#ifndef cetlib_simultaneous_function_spawner_h
-#define cetlib_simultaneous_function_spawner_h
+#ifndef hep_concurrency_simultaneous_function_spawner_h
+#define hep_concurrency_simultaneous_function_spawner_h
 
 //=================================================================
 // The 'simultaneous_function_spawner' is intended for testing the
@@ -72,7 +72,7 @@ namespace hep::concurrency {
   };
 }
 
-#endif /* cetlib_simultaneous_function_spawner_h */
+#endif /* hep_concurrency_simultaneous_function_spawner_h */
 
 // Local variables:
 // mode: c++
