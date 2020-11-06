@@ -124,29 +124,23 @@ namespace hep::concurrency {
     // Concurrent operations
     // ---------------------
 
+    handle at(Key const& key) const;
+
     // For key types that provide a 'supports' function, the user can
     // supply a value of type T, which will then be used to identify
     // and return a handle to the correct cache entry.
-    template <typename T, typename K_ = Key>
-    std::enable_if_t<detail::has_supports_fcn_v<K_>, handle>
-    entry_for(T const& t) const;
+    template <typename T>
+    handle entry_for(T const& t) const;
 
     // To optimize lookup, one can provide a handle as a hint, which
     // will be consulted first to determine if the hint can satisfy
     // the lookup for the provided type T.  If not, then the function
     // falls back to the entry_for function above.
-    template <typename T, typename K_ = Key>
-    std::enable_if_t<detail::has_supports_fcn_v<K_>, handle>
-    entry_for(handle hint, T const& t) const;
-
-    // For key types that do not provide a 'supports' function, the
-    // cache entry can be looked up by supplying (a value convertible
-    // to) the key.
+    //
+    // Calling this function can be more efficient than calling
+    // at(key) for a handle that already points to the correct entry.
     template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Key>
-                       and not detail::has_supports_fcn_v<Key>,
-                     handle>
-    entry_for(T const& t) const;
+    handle entry_for(handle hint, T const& t) const;
 
     template <typename T>
     std::enable_if_t<std::is_convertible_v<T, Value>, handle>
@@ -169,14 +163,6 @@ namespace hep::concurrency {
     void shrink_to_fit();
 
   private:
-    handle
-    at_(Key const& key) const
-    {
-      if (accessor access_token; entries_.find(access_token, key))
-        return handle{&access_token->first, &access_token->second};
-      return handle::invalid();
-    }
-
     std::vector<std::pair<std::size_t, Key>>
     unused_entries_()
     {
@@ -219,22 +205,22 @@ namespace hep::concurrency {
   }
 
   template <typename Key, typename Value>
-  template <typename T>
-  std::enable_if_t<std::is_convertible_v<T, Key>
-                     and not detail::has_supports_fcn_v<Key>,
-                   cache_handle<Key, Value>>
-  cache<Key, Value>::entry_for(T const& t) const
+  cache_handle<Key, Value>
+  cache<Key, Value>::at(Key const& key) const
   {
-    return at_(t);
+    if (accessor access_token; entries_.find(access_token, key))
+      return handle{&access_token->first, &access_token->second};
+    return handle::invalid();
   }
 
   template <typename Key, typename Value>
-  template <typename T, typename K_>
-  std::enable_if_t<detail::has_supports_fcn_v<K_>, cache_handle<Key, Value>>
+  template <typename T>
+  cache_handle<Key, Value>
   cache<Key, Value>::entry_for(T const& t) const
   {
-    static_assert(not std::is_same_v<T, Key>,
-                  "Cannot use the key type to retrieve a cache entry.");
+    static_assert(detail::valid_supports_expression_v<Key, T>,
+                  "The Key type does not provide a const-qualified 'supports' "
+                  "function that takes an argument of the provided type.");
     std::vector<Key> matching_keys;
     for (auto const& [key, count] : counts_) {
       if (key.supports(t)) {
@@ -250,16 +236,17 @@ namespace hep::concurrency {
       throw cet::exception("Data retrieval error.")
         << "More than one key match.";
     }
-    return at_(matching_keys[0]);
+    return at(matching_keys[0]);
   }
 
   template <typename Key, typename Value>
-  template <typename T, typename K_>
-  std::enable_if_t<detail::has_supports_fcn_v<K_>, cache_handle<Key, Value>>
+  template <typename T>
+  cache_handle<Key, Value>
   cache<Key, Value>::entry_for(handle const hint, T const& t) const
   {
-    static_assert(not std::is_same_v<T, Key>,
-                  "Cannot use the key type to retrieve a cache entry.");
+    static_assert(detail::valid_supports_expression_v<Key, T>,
+                  "The Key type does not provide a const-qualified 'supports' "
+                  "function that takes an argument of the provided type.");
     if (hint and hint.key().supports(t)) {
       return hint;
     }

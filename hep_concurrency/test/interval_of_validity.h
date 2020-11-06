@@ -18,7 +18,14 @@ namespace hep::concurrency::test {
     bool
     supports(unsigned int const value) const noexcept
     {
-      return range_.first <= value && range_.second > value;
+      return range_.first <= value and value < range_.second;
+    }
+
+    bool
+    supports(interval_of_validity const iov) const noexcept
+    {
+      return range_.first <= iov.range_.first and
+             iov.range_.second <= range_.second;
     }
 
     bool

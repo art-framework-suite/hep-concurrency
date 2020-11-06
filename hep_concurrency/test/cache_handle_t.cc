@@ -125,19 +125,19 @@ TEST_CASE("Handle comparisons")
   SECTION("Invalid and valid keys")
   {
     auto const invalid = handle_t::invalid();
-    auto h = office_numbers.entry_for("Alice");
+    auto h = office_numbers.at("Alice");
     CHECK(invalid != h);
     h.invalidate();
     CHECK(invalid == h);
   }
   SECTION("Both valid keys")
   {
-    auto const alice1 = office_numbers.entry_for("Alice");
+    auto const alice1 = office_numbers.at("Alice");
     auto const alice2 = alice1;
     CHECK(alice1);
     CHECK(alice2);
     CHECK(alice1 == alice2);
-    auto const david = office_numbers.entry_for("David");
+    auto const david = office_numbers.at("David");
     CHECK(david);
     CHECK(david != alice1);
   }
