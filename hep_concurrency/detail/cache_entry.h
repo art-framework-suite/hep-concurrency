@@ -1,5 +1,5 @@
-#ifndef hep_concurrency_cache_entry_h
-#define hep_concurrency_cache_entry_h
+#ifndef hep_concurrency_detail_cache_entry_h
+#define hep_concurrency_detail_cache_entry_h
 
 // ===================================================================
 // The cache_entry class is a reference-counted object that is used as
@@ -95,7 +95,7 @@ namespace hep::concurrency::detail {
   };
 }
 
-#endif /* hep_concurrency_cache_entry_h */
+#endif /* hep_concurrency_detail_cache_entry_h */
 
 // Local Variables:
 // mode: c++
