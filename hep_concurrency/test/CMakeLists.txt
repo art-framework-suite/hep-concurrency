@@ -6,11 +6,24 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 
 cet_test(assert_only_one_thread_test
   LIBRARIES Threads::Threads
-  TEST_PROPERTIES PASS_REGULAR_EXPRESSION "Failed assert--more than one thread accessing location")
-cet_test(cache_handle_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
-cet_test(cache_mt_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
-cet_test(cache_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
-cet_test(simultaneous_function_spawner_t USE_CATCH_MAIN LIBRARIES Threads::Threads)
+  TEST_PROPERTIES
+  PASS_REGULAR_EXPRESSION "Failed assert--more than one thread accessing location")
+
+# Catch2 tests
+set(catch2_tests
+    cache_handle_t
+    cache_mt_t
+    cache_t
+    simultaneous_function_spawner_t)
+
+foreach(test IN LISTS catch2_tests)
+  cet_test(${test}
+           USE_CATCH2_MAIN
+           LIBRARIES PRIVATE ${TBB} cetlib_except::cetlib_except Catch2::Catch2)
+endforeach()
+
+# Don't forget the threads library where needed.
+target_link_libraries(simultaneous_function_spawner_t PRIVATE Threads::Threads)
 
 #set(source_libraries hep_concurrency ${CPPUNIT} ${TBB} pthread)
 
