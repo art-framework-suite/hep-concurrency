@@ -17,7 +17,7 @@ cmake_policy(VERSION 3.14)
 # Policy CMP0096 must be set to NEW to preserve leading zeros in the
 # VERSION set by project().
 cmake_policy(SET CMP0096 NEW)
-find_package(cetmodules 2.02.01 REQUIRED)
+find_package(cetmodules 2.04.00 REQUIRED)
 project(hep_concurrency VERSION 1.05.00 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules ### MIGRATE-ACTION-REQUIRED: remove
