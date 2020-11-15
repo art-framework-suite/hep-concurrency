@@ -74,10 +74,10 @@ cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 # ----------------------------------------------------------------------
 # Describe build prerequisites:
 
-cet_find_package(Catch2 PRIVATE)
-cet_find_package(cetlib_except)
-cet_find_package(CppUnit PRIVATE)
-cet_find_package(TBB)
+cet_find_package(Catch2 PRIVATE REQUIRED)
+cet_find_package(cetlib_except REQUIRED)
+cet_find_package(CppUnit PRIVATE REQUIRED)
+cet_find_package(TBB REQUIRED)
 
 
 # ----------------------------------------------------------------------
