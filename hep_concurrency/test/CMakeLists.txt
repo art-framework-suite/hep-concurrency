@@ -19,13 +19,13 @@ set(catch2_tests
 foreach(test IN LISTS catch2_tests)
   cet_test(${test}
            USE_CATCH2_MAIN
-           LIBRARIES PRIVATE ${TBB} cetlib_except::cetlib_except Catch2::Catch2)
+           LIBRARIES PRIVATE TBB::tbb cetlib_except::cetlib_except Catch2::Catch2)
 endforeach()
 
 # Don't forget the threads library where needed.
 target_link_libraries(simultaneous_function_spawner_t PRIVATE Threads::Threads)
 
-#set(source_libraries hep_concurrency ${CPPUNIT} ${TBB} pthread)
+#set(source_libraries hep_concurrency ${CPPUNIT} TBB::tbb pthread)
 
 #cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
 #cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)

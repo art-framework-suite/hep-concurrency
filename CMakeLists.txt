@@ -77,7 +77,7 @@ cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 cet_find_package(Catch2 PRIVATE)
 cet_find_package(cetlib_except)
 cet_find_package(CppUnit PRIVATE)
-cet_find_package(tbb)
+cet_find_package(TBB)
 
 
 # ----------------------------------------------------------------------
