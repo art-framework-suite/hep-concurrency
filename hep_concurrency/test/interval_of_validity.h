@@ -40,8 +40,8 @@ namespace hep::concurrency::test {
       return range_ == other.range_;
     }
 
-    friend class std::hash<interval_of_validity>;
-    friend class tbb::tbb_hash_compare<interval_of_validity>;
+    friend struct std::hash<interval_of_validity>;
+    friend struct tbb::tbb_hash_compare<interval_of_validity>;
     friend std::ostream& operator<<(std::ostream&,
                                     interval_of_validity const& iov);
 
