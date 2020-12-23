@@ -6,7 +6,6 @@
 #include "tbb/parallel_for_each.h"
 
 #include <algorithm>
-#include <map>
 #include <random>
 #include <string>
 #include <utility>
@@ -20,7 +19,7 @@ namespace {
   constexpr auto num_events = 20;
   constexpr auto half_of_them = num_events / 2;
 
-  std::map<interval_of_validity, std::string> iovs{
+  std::vector<std::pair<interval_of_validity, std::string>> iovs{
     {interval_of_validity{0, half_of_them}, "Good"},
     {interval_of_validity{half_of_them, num_events}, "Bad"}};
 

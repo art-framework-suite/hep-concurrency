@@ -46,8 +46,8 @@
 //
 // It frequently happens that a set of data may apply for a range of
 // values.  Instead of inserting an element into the cache for each
-// value, the user may supply their own type as a key (TODO-need blurb
-// about hashing), with the following interface (e.g.):
+// value, the user may supply their own type as a key with the
+// following interface (e.g.):
 //
 //   struct range_of_values {
 //     unsigned start;
@@ -74,6 +74,30 @@
 //      return true.  It is a runtime error for more than one key to
 //      support the same value.
 //
+// Hashing and equality
+// --------------------
+//
+// The cache implementation requires that the key supports:
+//
+//   1. A reproducible hash value for a given key value
+//   2. Equality comparison (e.g. key1 == key2)
+//
+// These requirements are satisfied by many types provided by the C++
+// language or STL.  However, there are some types for which an
+// equality comparison may provided by the C++ STL, but for which a
+// hash is not available (e.g. std::pair<unsigned, unsigned>).  In
+// such cases, an explicit specialization of std::hash will be needed.
+//
+// For user-defined keys, the cache template will provide the hashing
+// functionality required if the following member functions are
+// provided in the key type:
+//
+//   struct range_of_values {
+//     ...
+//     size_t hash() const {...};
+//     bool operator==(range_of_values const& rov) const {...};
+//   };
+//
 // Technical notes
 // ---------------
 //
@@ -93,6 +117,7 @@
 #include "hep_concurrency/assert_only_one_thread.h"
 #include "hep_concurrency/cache_handle.h"
 #include "hep_concurrency/detail/cache_entry.h"
+#include "hep_concurrency/detail/cache_hashers.h"
 #include "hep_concurrency/detail/cache_key_supports.h"
 
 #include "tbb/concurrent_hash_map.h"
@@ -110,10 +135,11 @@ namespace hep::concurrency {
   class cache {
     using count_map_t = tbb::concurrent_unordered_map<Key,
                                                       detail::entry_count_ptr,
-                                                      std::hash<Key>>;
+                                                      detail::counter_hasher<Key>>;
     using count_value_type = typename count_map_t::value_type;
     using collection_t = tbb::concurrent_hash_map<Key,
-                                                  detail::cache_entry<Value>>;
+                                                  detail::cache_entry<Value>,
+                                                  detail::collection_hasher<Key>>;
     using accessor = typename collection_t::accessor;
 
   public:
@@ -266,7 +292,9 @@ namespace hep::concurrency {
   cache<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
   {
     auto entries_to_drop = unused_entries_();
-    std::sort(begin(entries_to_drop), end(entries_to_drop), std::greater<>{});
+    // Sort in reverse-chronological order (according to sequence number).
+    std::sort(begin(entries_to_drop), end(entries_to_drop),
+              [](auto const& a, auto const& b) { return a.first > b.first; });
 
     if (std::size(entries_to_drop) <= keep_last) {
       return;

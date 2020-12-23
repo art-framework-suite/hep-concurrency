@@ -11,7 +11,7 @@ namespace hep::concurrency::test {
   public:
     using value_type = std::pair<unsigned int, unsigned int>;
 
-    interval_of_validity(unsigned int begin, unsigned int end)
+    interval_of_validity(unsigned int begin, unsigned int end) noexcept
       : range_{begin, end}
     {}
 
@@ -29,24 +29,22 @@ namespace hep::concurrency::test {
     }
 
     bool
-    operator<(interval_of_validity const& other) const noexcept
-    {
-      return range_ < other.range_;
-    }
-
-    bool
     operator==(interval_of_validity const& other) const noexcept
     {
       return range_ == other.range_;
     }
 
-    friend struct std::hash<interval_of_validity>;
-    friend struct tbb::tbb_hash_compare<interval_of_validity>;
+    std::size_t hash() const noexcept
+    {
+      return hasher_(range_.first) ^ hasher_(range_.second);
+    }
+
     friend std::ostream& operator<<(std::ostream&,
                                     interval_of_validity const& iov);
 
   private:
     value_type range_;
+    std::hash<unsigned> hasher_{};
   };
 
   inline std::ostream&
@@ -54,39 +52,6 @@ namespace hep::concurrency::test {
   {
     return os << '[' << iov.range_.first << ", " << iov.range_.second << ')';
   }
-}
-
-namespace tbb {
-  template <>
-  struct tbb_hash_compare<hep::concurrency::test::interval_of_validity> {
-    std::size_t
-    hash(hep::concurrency::test::interval_of_validity const& iov) const
-    {
-      return hasher.hash(iov.range_);
-    }
-
-    bool
-    equal(hep::concurrency::test::interval_of_validity const& lhs,
-          hep::concurrency::test::interval_of_validity const& rhs) const
-    {
-      return hasher.equal(lhs.range_, rhs.range_);
-    }
-
-    tbb_hash_compare<hep::concurrency::test::interval_of_validity::value_type>
-      hasher;
-  };
-}
-
-namespace std {
-  template <>
-  struct hash<hep::concurrency::test::interval_of_validity> {
-    std::size_t
-    operator()(hep::concurrency::test::interval_of_validity const& iov) const
-    {
-      std::hash<unsigned> hash{};
-      return hash(iov.range_.first) ^ hash(iov.range_.second);
-    }
-  };
 }
 
 #endif /* hep_concurrency_test_interval_of_validity_h */
