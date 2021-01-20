@@ -35,7 +35,7 @@
   if (getenv("ART_DEBUG_IGNORE") != nullptr) {                                 \
     ++hep::concurrency::ignoreBalance_;                                        \
     std::ostringstream msg;                                                    \
-    msg << "-----> tid: " << hep::concurrency::getThreadID() << " "            \
+    msg << "-----> tid: " << std::this_thread::get_id() << " "                 \
         << hep::concurrency::ignoreBalance_                                    \
         << " ANNOTATE_THREAD_IGNORE_BEGIN: " << __FILE__ << ":" << __LINE__    \
         << " " << __func__ << "\n";                                            \
@@ -48,7 +48,7 @@
   if (getenv("ART_DEBUG_IGNORE") != nullptr) {                                 \
     --hep::concurrency::ignoreBalance_;                                        \
     std::ostringstream msg;                                                    \
-    msg << "-----> tid: " << hep::concurrency::getThreadID() << " "            \
+    msg << "-----> tid: " << std::this_thread::get_id() << " "                 \
         << hep::concurrency::ignoreBalance_                                    \
         << " ANNOTATE_THREAD_IGNORE_END:   " << __FILE__ << ":" << __LINE__    \
         << " " << __func__ << "\n";                                            \
@@ -85,15 +85,10 @@ void AnnotateIgnoreSyncEnd(const char*, int);
 #define ANNOTATE_THREAD_IGNORE_END
 #endif // defined(__SANITIZE_THREAD__)
 
-namespace hep {
-  namespace concurrency {
-
-    extern int intentionalDataRace_;
-    extern thread_local int ignoreBalance_;
-    std::thread::id getThreadID();
-
-  } // namespace concurrency
-} // namespace hep
+namespace hep::concurrency {
+  extern int intentionalDataRace_;
+  extern thread_local int ignoreBalance_;
+} // namespace hep::concurrency
 
 #define INTENTIONAL_DATA_RACE(ENV_VAR)                                         \
   {                                                                            \
@@ -101,7 +96,7 @@ namespace hep {
       if (getenv("ART_DEBUG_DR") != nullptr) {                                 \
         std::ostringstream buf;                                                \
         buf << "-----> Making data race " #ENV_VAR " "                         \
-            << "tid: " << hep::concurrency::getThreadID() << " "               \
+            << "tid: " << std::this_thread::get_id() << " "                    \
             << hep::concurrency::ignoreBalance_ << " " << __FILE__ << ":"      \
             << __LINE__ << "\n";                                               \
         std::cerr << buf.str();                                                \
