@@ -11,30 +11,11 @@
 
 using namespace std;
 
-namespace hep {
-  namespace concurrency {
+namespace hep::concurrency {
 
-    SerialTaskQueueChain::~SerialTaskQueueChain() = default;
-    SerialTaskQueueChain::SerialTaskQueueChain() = default;
+  SerialTaskQueueChain::SerialTaskQueueChain(
+    vector<shared_ptr<SerialTaskQueue>> queues)
+    : queues_{move(queues)}
+  {}
 
-    SerialTaskQueueChain::SerialTaskQueueChain(
-      vector<shared_ptr<SerialTaskQueue>> queues)
-    {
-      queues_ = move(queues);
-    }
-
-    SerialTaskQueueChain::SerialTaskQueueChain(SerialTaskQueueChain&& rhs)
-    {
-      queues_ = move(rhs.queues_);
-    }
-
-    SerialTaskQueueChain&
-    SerialTaskQueueChain::operator=(SerialTaskQueueChain&& rhs)
-    {
-      RecursiveMutexSentry sentry{mutex_, __func__};
-      queues_ = move(rhs.queues_);
-      return *this;
-    }
-
-  } // namespace concurrency
-} // namespace hep
+} // namespace hep::concurrency

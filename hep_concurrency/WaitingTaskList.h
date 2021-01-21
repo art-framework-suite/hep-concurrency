@@ -3,39 +3,40 @@
 // vim: set sw=2 expandtab :
 
 #include "hep_concurrency/RecursiveMutex.h"
-#include "tbb/task.h"
 
 #include <atomic>
 #include <exception>
 #include <queue>
 
-namespace hep {
-  namespace concurrency {
+namespace tbb {
+  class task;
+}
 
-    class WaitingTaskList {
-    private: // Data Members
-      hep::concurrency::RecursiveMutex mutex_{"WaitingTaskList::mutex_"};
-      std::queue<tbb::task*>* taskQueue_;
-      bool waiting_;
-      std::exception_ptr* exceptionPtr_;
+namespace hep::concurrency {
 
-    private: // Implementation details
-      void runAllTasks();
+  class WaitingTaskList {
+  public:
+    WaitingTaskList();
+    ~WaitingTaskList();
 
-    public: // Special Member Functions
-      ~WaitingTaskList();
-      WaitingTaskList();
-      WaitingTaskList(WaitingTaskList const&) = delete;
-      const WaitingTaskList& operator=(WaitingTaskList const&) = delete;
+    // Disable copy operations
+    WaitingTaskList(WaitingTaskList const&) = delete;
+    WaitingTaskList& operator=(WaitingTaskList const&) = delete;
 
-    public: // API
-      void add(tbb::task*);
-      void doneWaiting(std::exception_ptr);
-      void reset();
-    };
+    void add(tbb::task*);
+    void doneWaiting(std::exception_ptr);
+    void reset();
 
-  } // namespace concurrency
-} // namespace hep
+  private:
+    void runAllTasks_();
+
+    hep::concurrency::RecursiveMutex mutex_{"WaitingTaskList::mutex_"};
+    std::queue<tbb::task*>* taskQueue_;
+    bool waiting_;
+    std::exception_ptr* exceptionPtr_;
+  };
+
+} // namespace hep::concurrency
 
 #endif /* hep_concurrency_WaitingTaskList_h */
 
