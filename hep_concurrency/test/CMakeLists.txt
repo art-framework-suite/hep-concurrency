@@ -1,11 +1,11 @@
 include(CetTest)
 cet_enable_asserts()
 
-cet_find_package(Threads REQUIRED)
+find_package(Threads REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 
 cet_test(assert_only_one_thread_test
-  LIBRARIES Threads::Threads
+  LIBRARIES PRIVATE Threads::Threads
   TEST_PROPERTIES PASS_REGULAR_EXPRESSION "Failed assert--more than one thread accessing location")
 cet_test(cache_handle_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)
 cet_test(cache_mt_t USE_CATCH_MAIN LIBRARIES ${TBB} cetlib_except)

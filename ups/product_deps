@@ -1,4 +1,4 @@
-parent hep_concurrency v1_05_00
+parent hep_concurrency v1_06_00
 defaultqual e19
 
 fcldir -
@@ -7,12 +7,12 @@ libdir fq_dir lib
 
 # define product/version pairs
 product		version		<format=2>
-cetlib_except	v1_05_00	-
+cetlib_except	v1_06_00	-
 clang		v7_0_0		c7
 gcc		v8_2_0		e19
 gcc		v9_3_0		e20
 tbb		v2020_2a
-cetbuildtools	v7_17_01	-	only_for_build
+cetbuildtools	v7_17_02	-	only_for_build
 catch		v2_12_2		-	only_for_build
 cppunit		v1_15_1a	-	only_for_build
 end_product_list
