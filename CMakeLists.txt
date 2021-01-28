@@ -14,7 +14,7 @@
 cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
 
 find_package(cetmodules 2.04.00 REQUIRED)
-project(hep_concurrency VERSION 1.05.00 LANGUAGES CXX)
+project(hep_concurrency VERSION 1.06.00 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules ### MIGRATE-ACTION-REQUIRED: remove
 
