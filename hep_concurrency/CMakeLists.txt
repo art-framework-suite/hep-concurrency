@@ -1,8 +1,6 @@
-set(LIB_NAME ${PROJECT_NAME})
-
 cet_make_library(
   LIBRARY_NAME
-    ${LIB_NAME}
+    ${PROJECT_NAME}
   SOURCE
     RecursiveMutex.cc
     SerialTaskQueue.cc
@@ -14,11 +12,10 @@ cet_make_library(
     WaitingTaskList.cc
     tsan.cc
   LIBRARIES
-    ${TBB}
+    TBB::tbb
 )
 
 install_headers()
 install_source()
 
 add_subdirectory(test)
-

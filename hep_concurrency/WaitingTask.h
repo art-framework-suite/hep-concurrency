@@ -11,81 +11,49 @@
 
 namespace hep::concurrency {
 
-  using WaitingTask = tbb::task;
-
   class WaitingTaskExHolder {
-  private: // Data Members
-    std::atomic<std::exception_ptr*> ptr_;
-
-  public: // Special Member Functions
-    ~WaitingTaskExHolder();
+  public:
     WaitingTaskExHolder();
+    ~WaitingTaskExHolder();
 
-  public: // API
     std::exception_ptr const* exceptionPtr() const;
     void dependentTaskFailed(std::exception_ptr);
+
+  private:
+    std::atomic<std::exception_ptr*> ptr_;
   };
 
   template <typename F>
   class FunctorWaitingTask : public tbb::task, public WaitingTaskExHolder {
-  private: // Data Members
-    std::atomic<F*> func_;
+  public:
+    explicit FunctorWaitingTask(F&& f);
 
-  public: // Special Member Functions
-    ~FunctorWaitingTask() override;
-    explicit FunctorWaitingTask();
-    explicit FunctorWaitingTask(F);
-
-  public: // API required by tbb::task
+    // API required by tbb::task
     task* execute() override;
+
+  private:
+    F func_;
   };
 
   template <typename F>
-  FunctorWaitingTask<F>::~FunctorWaitingTask()
-  {
-    ANNOTATE_BENIGN_RACE_SIZED(reinterpret_cast<char*>(&tbb::task::self()) -
-                               sizeof(tbb::internal::task_prefix),
-                               sizeof(tbb::task) +
-                               sizeof(tbb::internal::task_prefix),
-                               "tbb::task");
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    delete func_.load();
-    func_ = nullptr;
-    ANNOTATE_THREAD_IGNORE_END;
-  }
-
-  template <typename F>
-  FunctorWaitingTask<F>::FunctorWaitingTask()
-  {
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    func_ = nullptr;
-    ANNOTATE_THREAD_IGNORE_END;
-  }
-
-  template <typename F>
-  FunctorWaitingTask<F>::FunctorWaitingTask(F f)
-  {
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    func_ = new F(f);
-    ANNOTATE_THREAD_IGNORE_END;
-  }
+  FunctorWaitingTask<F>::FunctorWaitingTask(F&& f) : func_{std::forward<F>(f)}
+  {}
 
   template <typename F>
   tbb::task*
   FunctorWaitingTask<F>::execute()
   {
     auto p = exceptionPtr();
-    auto theFunc = func_.load();
-    theFunc->operator()(p);
+    func_(p);
     return nullptr;
   }
 
   template <typename ALLOC, typename F>
   tbb::task*
-  make_waiting_task(ALLOC&& iAlloc, F f)
+  make_waiting_task(ALLOC&& iAlloc, F&& f)
   {
     ANNOTATE_THREAD_IGNORE_BEGIN;
-    auto ret = new (iAlloc) FunctorWaitingTask<F>(f);
+    auto ret = new (iAlloc) FunctorWaitingTask<F>(std::forward<F>(f));
     ANNOTATE_THREAD_IGNORE_END;
     return ret;
   }

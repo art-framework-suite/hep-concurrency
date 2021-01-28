@@ -6,32 +6,20 @@
 
 #include <atomic>
 
-namespace hep {
-  namespace concurrency {
+namespace hep::concurrency {
 
-    class WaitingTaskHolder {
+  class WaitingTaskHolder {
+  public:
+    explicit WaitingTaskHolder(tbb::task*);
+    ~WaitingTaskHolder();
 
-    private:
-      std::atomic<tbb::task*> m_task;
+    void doneWaiting(std::exception_ptr);
 
-    public:
-      ~WaitingTaskHolder();
+  private:
+    std::atomic<tbb::task*> m_task{nullptr};
+  };
 
-      WaitingTaskHolder();
-
-      explicit WaitingTaskHolder(tbb::task*);
-
-      WaitingTaskHolder(const WaitingTaskHolder&);
-
-      WaitingTaskHolder(WaitingTaskHolder&&);
-
-      WaitingTaskHolder& operator=(const WaitingTaskHolder&);
-
-      void doneWaiting(std::exception_ptr);
-    };
-
-  } // namespace concurrency
-} // namespace hep
+} // namespace hep::concurrency
 
 #endif /* hep_concurrency_WaitingTaskHolder_h */
 

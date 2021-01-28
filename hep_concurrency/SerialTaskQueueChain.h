@@ -11,92 +11,84 @@
 #include <memory>
 #include <vector>
 
-namespace hep {
-  namespace concurrency {
+namespace hep::concurrency {
 
-    class SerialTaskQueueChain {
-      // Data Members
-    private:
-      // Protects all data members
-      hep::concurrency::RecursiveMutex mutex_{"SerialTaskQueueChain::mutex_"};
-      // The queues
-      std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
-      // Implementation Details
-    private:
-      template <typename T>
-      void passDown(unsigned int, const T&);
-      template <typename T>
-      void runFunc(const T&);
-      // Special Member Functions
-    public:
-      ~SerialTaskQueueChain();
-      SerialTaskQueueChain();
-      explicit SerialTaskQueueChain(
-        std::vector<std::shared_ptr<SerialTaskQueue>>);
-      SerialTaskQueueChain(SerialTaskQueueChain const&) = delete;
-      SerialTaskQueueChain(SerialTaskQueueChain&&);
-      SerialTaskQueueChain& operator=(SerialTaskQueueChain const&) = delete;
-      SerialTaskQueueChain& operator=(SerialTaskQueueChain&&);
-      // API
-    public:
-      template <typename T>
-      void push(T const&);
-    };
+  class SerialTaskQueueChain {
+  public:
+    explicit SerialTaskQueueChain(
+      std::vector<std::shared_ptr<SerialTaskQueue>>);
 
-    template <typename T>
-    void
-    SerialTaskQueueChain::push(T const& func)
-    {
-      hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
-      assert(queues_.size() > 0);
-      if (queues_.size() == 1) {
-        // The mutable is *not* optional, the c++ standard requires this!
-        queues_[0]->push([this, func]() mutable { runFunc(func); });
-      } else {
-        // The mutable is *not* optional, the c++ standard requires this!
-        queues_[0]->push([this, func]() mutable { passDown(1, func); });
-      }
+    // No copy/move operations
+    SerialTaskQueueChain(SerialTaskQueueChain const&) = delete;
+    SerialTaskQueueChain(SerialTaskQueueChain&&) = delete;
+    SerialTaskQueueChain& operator=(SerialTaskQueueChain const&) = delete;
+    SerialTaskQueueChain& operator=(SerialTaskQueueChain&&) = delete;
+
+    template <typename F>
+    void push(F&&);
+
+  private:
+    template <typename F>
+    void passDown(unsigned int, F&&);
+    template <typename F>
+    void runFunc(F const&);
+
+    RecursiveMutex mutex_{"SerialTaskQueueChain::mutex_"};
+    std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
+  };
+
+  template <typename F>
+  void
+  SerialTaskQueueChain::push(F&& func)
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    assert(queues_.size() > 0);
+    if (queues_.size() == 1) {
+      queues_[0]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+    } else {
+      queues_[0]->push([this, f = std::forward<F>(func)]() mutable {
+        passDown(1, std::forward<F>(f));
+      });
     }
+  }
 
-    template <typename T>
-    void
-    SerialTaskQueueChain::passDown(unsigned int idx, T const& func)
-    {
-      hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
-      queues_[idx - 1]->pause();
-      if ((idx + 1) == queues_.size()) {
-        // The mutable is *not* optional, the c++ standard requires this!
-        queues_[idx]->push([this, func]() mutable { runFunc(func); });
-      } else {
-        auto nxt = idx + 1;
-        // The mutable is *not* optional, the c++ standard requires this!
-        queues_[idx]->push(
-          [this, nxt, func]() mutable { passDown(nxt, func); });
-      }
+  template <typename F>
+  void
+  SerialTaskQueueChain::passDown(unsigned int idx, F&& func)
+  {
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    queues_[idx - 1]->pause();
+    if ((idx + 1) == queues_.size()) {
+      queues_[idx]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+    } else {
+      auto nxt = idx + 1;
+      queues_[idx]->push([this, nxt, f = std::forward<F>(func)]() mutable {
+        passDown(nxt, std::forward<F>(f));
+      });
     }
+  }
 
-    template <typename T>
-    void
-    SerialTaskQueueChain::runFunc(const T& func)
-    {
-      try {
-        func();
-      }
-      catch (...) {
-        hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
-        for (auto I = queues_.rbegin() + 1; I != queues_.rend(); ++I) {
-          (*I)->resume();
-        }
-        throw;
-      }
-      hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
-      for (auto I = queues_.rbegin() + 1; I != queues_.rend(); ++I) {
-        (*I)->resume();
-      }
+  template <typename F>
+  void
+  SerialTaskQueueChain::runFunc(F const& func)
+  {
+    try {
+      func();
     }
+    catch (...) {
+      RecursiveMutexSentry sentry{mutex_, __func__};
+      for (auto it = queues_.rbegin() + 1; it != queues_.rend(); ++it) {
+        (*it)->resume();
+      }
+      throw;
+    }
+    RecursiveMutexSentry sentry{mutex_, __func__};
+    for (auto it = queues_.rbegin() + 1; it != queues_.rend(); ++it) {
+      (*it)->resume();
+    }
+  }
 
-  } // namespace concurrency
-} // namespace hep
+} // namespace hep::concurrency
 
 #endif /* hep_concurrency_SerialTaskQueueChain_h */
 
