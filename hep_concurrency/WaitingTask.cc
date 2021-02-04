@@ -28,11 +28,11 @@ namespace hep {
       ANNOTATE_THREAD_IGNORE_END;
     }
 
-    std::exception_ptr const*
+    std::exception_ptr
     WaitingTaskExHolder::exceptionPtr() const
     {
       auto ret = ptr_.load();
-      return ret;
+      return ret ? *ret : std::exception_ptr{};
     }
 
     void

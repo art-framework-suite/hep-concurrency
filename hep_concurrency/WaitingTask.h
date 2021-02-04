@@ -16,7 +16,7 @@ namespace hep::concurrency {
     WaitingTaskExHolder();
     ~WaitingTaskExHolder();
 
-    std::exception_ptr const* exceptionPtr() const;
+    std::exception_ptr exceptionPtr() const;
     void dependentTaskFailed(std::exception_ptr);
 
   private:
@@ -43,8 +43,7 @@ namespace hep::concurrency {
   tbb::task*
   FunctorWaitingTask<F>::execute()
   {
-    auto p = exceptionPtr();
-    func_(p);
+    func_(exceptionPtr());
     return nullptr;
   }
 

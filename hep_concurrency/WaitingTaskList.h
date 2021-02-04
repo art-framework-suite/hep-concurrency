@@ -24,7 +24,7 @@ namespace hep::concurrency {
     WaitingTaskList& operator=(WaitingTaskList const&) = delete;
 
     void add(tbb::task*);
-    void doneWaiting(std::exception_ptr);
+    void doneWaiting(std::exception_ptr ex_ptr = {});
     void reset();
 
   private:

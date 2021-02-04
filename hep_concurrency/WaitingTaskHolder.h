@@ -13,7 +13,7 @@ namespace hep::concurrency {
     explicit WaitingTaskHolder(tbb::task*);
     ~WaitingTaskHolder();
 
-    void doneWaiting(std::exception_ptr);
+    void doneWaiting(std::exception_ptr ex_ptr = {});
 
   private:
     std::atomic<tbb::task*> m_task{nullptr};
