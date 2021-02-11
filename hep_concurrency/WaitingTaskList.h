@@ -2,10 +2,8 @@
 #define hep_concurrency_WaitingTaskList_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/RecursiveMutex.h"
-
-#include <atomic>
 #include <exception>
+#include <mutex>
 #include <queue>
 
 namespace tbb {
@@ -30,7 +28,7 @@ namespace hep::concurrency {
   private:
     void runAllTasks_();
 
-    hep::concurrency::RecursiveMutex mutex_{"WaitingTaskList::mutex_"};
+    std::recursive_mutex mutex_{};
     std::queue<tbb::task*>* taskQueue_;
     bool waiting_;
     std::exception_ptr* exceptionPtr_;

@@ -1,7 +1,6 @@
 // vim: set sw=2 expandtab :
 #include "hep_concurrency/WaitingTaskList.h"
 
-#include "hep_concurrency/RecursiveMutex.h"
 #include "hep_concurrency/WaitingTask.h"
 #include "hep_concurrency/hardware_pause.h"
 #include "hep_concurrency/tsan.h"
@@ -36,7 +35,7 @@ namespace hep::concurrency {
   void
   WaitingTaskList::reset()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     // We should not be reset if there are any tasks waiting to be
     // run.
     assert(taskQueue_->empty());
@@ -48,7 +47,7 @@ namespace hep::concurrency {
   void
   WaitingTaskList::add(tbb::task* tsk)
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     if (tsk == nullptr) {
       assert(tsk != nullptr);
       return;
@@ -84,7 +83,7 @@ namespace hep::concurrency {
   void
   WaitingTaskList::doneWaiting(exception_ptr exc)
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     // Run all the tasks and propagate an exception to them.
     waiting_ = false;
     delete exceptionPtr_;
@@ -95,7 +94,7 @@ namespace hep::concurrency {
   void
   WaitingTaskList::runAllTasks_()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     auto isEmpty = taskQueue_->empty();
     while (!isEmpty) {
       auto tsk = taskQueue_->front();

@@ -2,11 +2,12 @@
 #define hep_concurrency_SerialTaskQueue_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/RecursiveMutex.h"
 #include "hep_concurrency/tsan.h"
+
 #include "tbb/task.h"
 
 #include <atomic>
+#include <mutex>
 #include <queue>
 
 namespace hep::concurrency {
@@ -32,7 +33,7 @@ namespace hep::concurrency {
     void pushTask(tbb::task*);
     tbb::task* pickNextTask();
 
-    hep::concurrency::RecursiveMutex mutex_{"SerialTaskQueue::mutex_"};
+    std::recursive_mutex mutex_{};
     std::queue<tbb::task*> taskQueue_{};
     unsigned long pauseCount_{};
     bool taskRunning_{false};
@@ -90,7 +91,7 @@ namespace hep::concurrency {
   void
   SerialTaskQueue::push(F&& func)
   {
-    hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     ANNOTATE_THREAD_IGNORE_BEGIN;
     tbb::task* p = new (tbb::task::allocate_root())
       QueuedTask<F>{this, std::forward<F>(func)};

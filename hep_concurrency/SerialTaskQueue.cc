@@ -1,8 +1,6 @@
 // vim: set sw=2 expandtab :
 #include "hep_concurrency/SerialTaskQueue.h"
 
-#include "hep_concurrency/RecursiveMutex.h"
-#include "hep_concurrency/tsan.h"
 #include "tbb/task.h"
 
 #include <atomic>
@@ -15,14 +13,14 @@ namespace hep::concurrency {
   bool
   SerialTaskQueue::pause()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     return ++pauseCount_ == 1;
   }
 
   bool
   SerialTaskQueue::resume()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     if (--pauseCount_ != 0) {
       return false;
     }
@@ -37,7 +35,7 @@ namespace hep::concurrency {
   void
   SerialTaskQueue::pushTask(tbb::task* tsk)
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     if (tsk == nullptr) {
       return;
     }
@@ -52,7 +50,7 @@ namespace hep::concurrency {
   tbb::task*
   SerialTaskQueue::notify()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     taskRunning_ = false;
     return pickNextTask();
   }
@@ -60,7 +58,7 @@ namespace hep::concurrency {
   tbb::task*
   SerialTaskQueue::pickNextTask()
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     if ((pauseCount_ == 0) && !taskRunning_) {
       if (!taskQueue_.empty()) {
         auto ret = taskQueue_.front();

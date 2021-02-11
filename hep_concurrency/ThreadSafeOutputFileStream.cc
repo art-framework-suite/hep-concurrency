@@ -1,8 +1,6 @@
 #include "hep_concurrency/ThreadSafeOutputFileStream.h"
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/RecursiveMutex.h"
-
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -22,14 +20,14 @@ namespace hep {
 
     ThreadSafeOutputFileStream::operator bool() const
     {
-      RecursiveMutexSentry sentry{mutex_, __func__};
+      std::lock_guard sentry{mutex_};
       return static_cast<bool>(file_);
     }
 
     void
     ThreadSafeOutputFileStream::write(string&& msg)
     {
-      RecursiveMutexSentry sentry{mutex_, __func__};
+      std::lock_guard sentry{mutex_};
       file_ << forward<string>(msg);
     }
 
