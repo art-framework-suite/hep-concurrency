@@ -2,9 +2,13 @@
 #define hep_concurrency_WaitingTaskHolder_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/WaitingTask.h"
-
 #include <atomic>
+#include <functional>
+#include <stdexcept>
+
+namespace tbb {
+  class task;
+}
 
 namespace hep::concurrency {
 

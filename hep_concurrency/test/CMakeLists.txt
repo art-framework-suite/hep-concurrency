@@ -25,6 +25,8 @@ endforeach()
 # Don't forget the threads library where needed.
 target_link_libraries(simultaneous_function_spawner_t PRIVATE Threads::Threads)
 
+cet_test(task_queue_t LIBRARIES PRIVATE TBB::tbb hep_concurrency::hep_concurrency)
+
 #cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
 #cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
 

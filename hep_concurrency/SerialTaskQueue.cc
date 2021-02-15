@@ -1,13 +1,6 @@
 // vim: set sw=2 expandtab :
 #include "hep_concurrency/SerialTaskQueue.h"
 
-#include "tbb/task.h"
-
-#include <atomic>
-#include <queue>
-
-using namespace std;
-
 namespace hep::concurrency {
 
   bool
@@ -25,38 +18,14 @@ namespace hep::concurrency {
       return false;
     }
 
-    tbb::task* nt = pickNextTask();
-    if (nt != nullptr) {
-      tbb::task::spawn(*nt);
+    if (auto next_task = pickNextTask()) {
+      group_->run(*next_task);
     }
     return true;
   }
 
-  void
-  SerialTaskQueue::pushTask(tbb::task* tsk)
-  {
-    std::lock_guard sentry{mutex_};
-    if (tsk == nullptr) {
-      return;
-    }
-
-    taskQueue_.push(tsk);
-    tbb::task* nt = pickNextTask();
-    if (nt != nullptr) {
-      tbb::task::spawn(*nt);
-    }
-  }
-
-  tbb::task*
-  SerialTaskQueue::notify()
-  {
-    std::lock_guard sentry{mutex_};
-    taskRunning_ = false;
-    return pickNextTask();
-  }
-
-  tbb::task*
-  SerialTaskQueue::pickNextTask()
+  auto
+  SerialTaskQueue::pickNextTask() -> task_ptr_t
   {
     std::lock_guard sentry{mutex_};
     if ((pauseCount_ == 0) && !taskRunning_) {
@@ -68,6 +37,22 @@ namespace hep::concurrency {
       }
     }
     return nullptr;
+  }
+
+  auto
+  SerialTaskQueue::notify() -> task_ptr_t
+  {
+    std::lock_guard sentry{mutex_};
+    taskRunning_ = false;
+    return pickNextTask();
+  }
+
+  void
+  SerialTaskQueue::notify_and_run()
+  {
+    if (auto next_task = notify()) {
+      group_->run(*next_task);
+    }
   }
 
 } // namespace hep::concurrency
