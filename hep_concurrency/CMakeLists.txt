@@ -8,7 +8,6 @@ cet_make_library(
     SharedResourceNames.cc
     ThreadSafeOutputFileStream.cc
     WaitingTask.cc
-    WaitingTaskHolder.cc
     WaitingTaskList.cc
     tsan.cc
   LIBRARIES

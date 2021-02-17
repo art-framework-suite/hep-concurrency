@@ -2,59 +2,70 @@
 #define hep_concurrency_WaitingTask_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/tsan.h"
-#include "tbb/task.h"
-
 #include <atomic>
 #include <exception>
+#include <functional>
 #include <memory>
 
 namespace hep::concurrency {
 
-  class WaitingTaskExHolder {
+  using task_func_t = std::function<void(std::exception_ptr)>;
+
+  class WaitingTask {
   public:
-    WaitingTaskExHolder();
-    ~WaitingTaskExHolder();
+    explicit WaitingTask(task_func_t&& f, unsigned n_signals = 1)
+      : func_{std::move(f)}, n_{n_signals}
+    {}
+
+    // API required by tbb::task_group
+    void
+    operator()()
+    {
+      func_(exceptionPtr());
+    }
 
     std::exception_ptr exceptionPtr() const;
     void dependentTaskFailed(std::exception_ptr);
 
+    unsigned
+    ref_count()
+    {
+      return count_;
+    }
+
+    void
+    increment_ref_count()
+    {
+      ++count_;
+    }
+    unsigned
+    decrement_ref_count()
+    {
+      --count_;
+      return count_;
+    }
+
+    unsigned
+    decrement_done_count()
+    {
+      --n_;
+      return n_;
+    }
+
   private:
-    std::atomic<std::exception_ptr*> ptr_;
+    task_func_t func_;
+    std::atomic<unsigned> n_;
+    std::atomic<std::exception_ptr*> ptr_{nullptr};
+    std::atomic<unsigned> count_{};
   };
 
-  template <typename F>
-  class FunctorWaitingTask : public tbb::task, public WaitingTaskExHolder {
-  public:
-    explicit FunctorWaitingTask(F&& f);
+  using WaitingTaskPtr = std::shared_ptr<WaitingTask>;
 
-    // API required by tbb::task
-    task* execute() override;
-
-  private:
-    F func_;
-  };
-
-  template <typename F>
-  FunctorWaitingTask<F>::FunctorWaitingTask(F&& f) : func_{std::forward<F>(f)}
-  {}
-
-  template <typename F>
-  tbb::task*
-  FunctorWaitingTask<F>::execute()
+  template <typename T, typename... Args>
+  WaitingTaskPtr
+  make_waiting_task(Args&&... args)
   {
-    func_(exceptionPtr());
-    return nullptr;
-  }
-
-  template <typename ALLOC, typename F>
-  tbb::task*
-  make_waiting_task(ALLOC&& iAlloc, F&& f)
-  {
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    auto ret = new (iAlloc) FunctorWaitingTask<F>(std::forward<F>(f));
-    ANNOTATE_THREAD_IGNORE_END;
-    return ret;
+    return std::make_shared<WaitingTask>(T{std::forward<Args>(args)...});
   }
 
 } // hep::concurrency

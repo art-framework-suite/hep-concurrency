@@ -2,36 +2,38 @@
 #define hep_concurrency_WaitingTaskList_h
 // vim: set sw=2 expandtab :
 
+#include "hep_concurrency/WaitingTask.h"
+
 #include <exception>
 #include <mutex>
 #include <queue>
 
 namespace tbb {
-  class task;
+  class task_group;
 }
 
 namespace hep::concurrency {
 
   class WaitingTaskList {
   public:
-    WaitingTaskList();
-    ~WaitingTaskList();
+    explicit WaitingTaskList(tbb::task_group& group);
 
     // Disable copy operations
     WaitingTaskList(WaitingTaskList const&) = delete;
     WaitingTaskList& operator=(WaitingTaskList const&) = delete;
 
-    void add(tbb::task*);
+    void add(WaitingTaskPtr);
     void doneWaiting(std::exception_ptr ex_ptr = {});
     void reset();
 
   private:
     void runAllTasks_();
 
+    tbb::task_group* taskGroup_;
     std::recursive_mutex mutex_{};
-    std::queue<tbb::task*>* taskQueue_;
-    bool waiting_;
-    std::exception_ptr* exceptionPtr_;
+    std::queue<WaitingTaskPtr> taskQueue_{};
+    bool waiting_{true};
+    std::exception_ptr exceptionPtr_{};
   };
 
 } // namespace hep::concurrency
