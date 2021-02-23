@@ -14,30 +14,21 @@ set(catch2_tests
     cache_handle_t
     cache_mt_t
     cache_t
+    serial_task_queue_t
+    serial_task_queue_chain_t
     simultaneous_function_spawner_t)
 
 foreach(test IN LISTS catch2_tests)
   cet_test(${test}
            USE_CATCH2_MAIN
-           LIBRARIES PRIVATE TBB::tbb cetlib_except::cetlib_except Catch2::Catch2)
+           LIBRARIES PRIVATE
+             hep_concurrency::hep_concurrency
+             cetlib_except::cetlib_except
+             Catch2::Catch2
+             Threads::Threads)
 endforeach()
-
-# Don't forget the threads library where needed.
-target_link_libraries(simultaneous_function_spawner_t PRIVATE Threads::Threads)
-
-cet_test(task_queue_t LIBRARIES PRIVATE TBB::tbb hep_concurrency::hep_concurrency)
 
 #cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
 #cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
 
-# Unfortunately, the SerialTaskQueue tests expose TBB assertion
-# failures, that appear to be internal issues.  Until TBB fixes
-# things, we are forced to disable the tests for the DEBUG build.
-
-#string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
-#if(NOT ${BTYPE_UC} STREQUAL "DEBUG")
-  #cet_test(serialtaskqueuechain_t LIBRARIES ${source_libraries})
-  #cet_test(serialtaskqueue_t LIBRARIES ${source_libraries})
-#endif()
-
-#cet_test(waitingtasklist_t LIBRARIES ${source_libraries})
+#cet_test(waitingtasklist_t LIBRARIES PRIVATE hep_concurrency::hep_concurrency)
