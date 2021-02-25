@@ -5,7 +5,6 @@ cet_make_library(
     RecursiveMutex.cc
     SerialTaskQueue.cc
     SerialTaskQueueChain.cc
-    SharedResourceNames.cc
     ThreadSafeOutputFileStream.cc
     WaitingTask.cc
     WaitingTaskList.cc
