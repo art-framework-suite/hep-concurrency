@@ -16,7 +16,8 @@ set(catch2_tests
     cache_t
     serial_task_queue_t
     serial_task_queue_chain_t
-    simultaneous_function_spawner_t)
+    simultaneous_function_spawner_t
+    waiting_task_list_t)
 
 foreach(test IN LISTS catch2_tests)
   cet_test(${test}
@@ -30,5 +31,3 @@ endforeach()
 
 #cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
 #cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
-
-#cet_test(waitingtasklist_t LIBRARIES PRIVATE hep_concurrency::hep_concurrency)
