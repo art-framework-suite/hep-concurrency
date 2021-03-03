@@ -133,8 +133,10 @@ TEST_CASE("Stress the waiting list from multiple threads")
     CHECK(call_count == 0u);
 
     // Calling doneWaiting will run all tasks.
-    std::thread doneWaitThread([&wait_list] { wait_list.doneWaiting(); });
-    group.wait();
+    std::thread doneWaitThread([&wait_list, &group] {
+      wait_list.doneWaiting();
+      group.wait();
+    });
     doneWaitThread.join();
 
     CHECK(call_count == n_tasks);
