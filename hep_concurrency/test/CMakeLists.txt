@@ -8,8 +8,8 @@ cet_register_export_set(SET_NAME Testing
   NAMESPACE hep_concurrency_test SET_DEFAULT)
 
 # Test script executes exec.
-cet_make_exec(NAME ThreadSafeOutputFileStream_t LIBRARIES PRIVATE
-  hep_concurrency::hep_concurrency Threads::Threads)
+cet_make_exec(NAME ThreadSafeOutputFileStream_t NO_INSTALL
+  LIBRARIES PRIVATE hep_concurrency::hep_concurrency Threads::Threads)
 cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
 
 cet_test(assert_only_one_thread_test
