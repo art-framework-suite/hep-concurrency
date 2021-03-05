@@ -2,7 +2,7 @@
 
 #include "cetlib_except/exception_message_matcher.h"
 #include "hep_concurrency/cache.h"
-#include "hep_concurrency/test/interval_of_validity.h"
+#include "interval_of_validity.h"
 
 #include <utility>
 
