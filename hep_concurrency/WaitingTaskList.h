@@ -8,9 +8,7 @@
 #include <mutex>
 #include <queue>
 
-namespace tbb {
-  class task_group;
-}
+#include <tbb/task_group.h> // Can't forward-declare this class.
 
 namespace hep::concurrency {
 
