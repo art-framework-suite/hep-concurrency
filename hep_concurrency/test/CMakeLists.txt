@@ -1,41 +1,50 @@
 include(CetTest)
 cet_enable_asserts()
 
-cet_find_package(Threads REQUIRED)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+cet_find_package(Catch2 PRIVATE REQUIRED)
+
+# Put everything in a different export set.
+cet_register_export_set(SET_NAME Testing
+  NAMESPACE hep_concurrency_test SET_DEFAULT)
+
+# Test script executes exec.
+cet_make_exec(NAME ThreadSafeOutputFileStream_t NO_INSTALL
+  LIBRARIES PRIVATE hep_concurrency::hep_concurrency Threads::Threads)
+cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
 
 cet_test(assert_only_one_thread_test
-  LIBRARIES PRIVATE Threads::Threads
+  LIBRARIES PRIVATE
+    simultaneous_function_spawner
+    hep_concurrency::macros
+    Threads::Threads
   TEST_PROPERTIES
-  PASS_REGULAR_EXPRESSION "Failed assert--more than one thread accessing location")
+    PASS_REGULAR_EXPRESSION
+      "Failed assert--more than one thread accessing location"
+)
 
-# Catch2 tests
-set(catch2_tests
-    cache_handle_t
-    cache_mt_t
-    cache_t
-    simultaneous_function_spawner_t)
-
-foreach(test IN LISTS catch2_tests)
-  cet_test(${test}
-           USE_CATCH2_MAIN
-           LIBRARIES PRIVATE TBB::tbb cetlib_except::cetlib_except Catch2::Catch2)
+foreach(test IN ITEMS
+    serial_task_queue_chain_t
+    serial_task_queue_t
+    waiting_task_list_t
+)
+  cet_test(${test} USE_CATCH2_MAIN
+    LIBRARIES PRIVATE hep_concurrency::hep_concurrency)
 endforeach()
 
-# Don't forget the threads library where needed.
-target_link_libraries(simultaneous_function_spawner_t PRIVATE Threads::Threads)
+target_link_libraries(waiting_task_list_t PRIVATE TBB::tbb)
 
-#cet_make_exec(ThreadSafeOutputFileStream_t LIBRARIES pthread hep_concurrency)
-#cet_test(runThreadSafeOutputFileStream_t.sh PREBUILT)
+cet_test(simultaneous_function_spawner_t USE_CATCH2_MAIN
+  LIBRARIES PRIVATE hep_concurrency::simultaneous_function_spawner
+)
 
-# Unfortunately, the SerialTaskQueue tests expose TBB assertion
-# failures, that appear to be internal issues.  Until TBB fixes
-# things, we are forced to disable the tests for the DEBUG build.
+########################################################################
+# Test concurrent caching facility.
+########################################################################
 
-#string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC)
-#if(NOT ${BTYPE_UC} STREQUAL "DEBUG")
-  #cet_test(serialtaskqueuechain_t LIBRARIES ${source_libraries})
-  #cet_test(serialtaskqueue_t LIBRARIES ${source_libraries})
-#endif()
+foreach (target IN ITEMS cache_handle_t cache_mt_t cache_t)
+  cet_test(${target} USE_CATCH2_MAIN
+    LIBRARIES PRIVATE hep_concurrency::cache TBB::tbb)
+endforeach()
 
-#cet_test(waitingtasklist_t LIBRARIES ${source_libraries})
+target_link_libraries(cache_handle_t PRIVATE cetlib_except::Catch2Matchers)
+target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)

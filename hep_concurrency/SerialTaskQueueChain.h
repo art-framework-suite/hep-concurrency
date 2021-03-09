@@ -2,13 +2,13 @@
 #define hep_concurrency_SerialTaskQueueChain_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/RecursiveMutex.h"
 #include "hep_concurrency/SerialTaskQueue.h"
 
 #include <atomic>
 #include <cassert>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace hep::concurrency {
@@ -33,7 +33,7 @@ namespace hep::concurrency {
     template <typename F>
     void runFunc(F const&);
 
-    RecursiveMutex mutex_{"SerialTaskQueueChain::mutex_"};
+    std::recursive_mutex mutex_{};
     std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
   };
 
@@ -41,7 +41,7 @@ namespace hep::concurrency {
   void
   SerialTaskQueueChain::push(F&& func)
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     assert(queues_.size() > 0);
     if (queues_.size() == 1) {
       queues_[0]->push([this, f = std::forward<F>(func)] { runFunc(f); });
@@ -56,7 +56,7 @@ namespace hep::concurrency {
   void
   SerialTaskQueueChain::passDown(unsigned int idx, F&& func)
   {
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     queues_[idx - 1]->pause();
     if ((idx + 1) == queues_.size()) {
       queues_[idx]->push([this, f = std::forward<F>(func)] { runFunc(f); });
@@ -76,13 +76,13 @@ namespace hep::concurrency {
       func();
     }
     catch (...) {
-      RecursiveMutexSentry sentry{mutex_, __func__};
+      std::lock_guard sentry{mutex_};
       for (auto it = queues_.rbegin() + 1; it != queues_.rend(); ++it) {
         (*it)->resume();
       }
       throw;
     }
-    RecursiveMutexSentry sentry{mutex_, __func__};
+    std::lock_guard sentry{mutex_};
     for (auto it = queues_.rbegin() + 1; it != queues_.rend(); ++it) {
       (*it)->resume();
     }

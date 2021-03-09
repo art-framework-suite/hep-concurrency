@@ -1,22 +1,7 @@
-# ======================================================================
-#  hep_concurrency main build file
-#
-#  cd .../path/to/build/directory
-#  source .../path/to/hep_concurrency/ups/setup_for_development
-#  cmake [-DCMAKE_INSTALL_PREFIX=/install/path]
-#        -DCMAKE_BUILD_TYPE=$CETPKG_TYPE
-#        $CETPKG_SOURCE
-#  make
-#  make test
-#  make install
-#  make package (builds distribution tarfile)
-# ======================================================================
 cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
 
-find_package(cetmodules 2.04.00 REQUIRED)
-project(hep_concurrency VERSION 1.06.00 LANGUAGES CXX)
-
-# cetbuildtools contains our cmake modules ### MIGRATE-ACTION-REQUIRED: remove
+find_package(cetmodules 2.13.00 REQUIRED)
+project(hep_concurrency VERSION 1.07.00 LANGUAGES CXX)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -47,24 +32,10 @@ endif()
 
 cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
-# ----------------------------------------------------------------------
-# Describe build prerequisites:
-
-cet_find_package(Catch2 PRIVATE REQUIRED)
-cet_find_package(cetlib_except REQUIRED)
-cet_find_package(CppUnit PRIVATE REQUIRED)
-cet_find_package(TBB REQUIRED)
-
-
-# ----------------------------------------------------------------------
-# Describe source tree layout:
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+cet_find_package(Threads REQUIRED)
 
 add_subdirectory(${PROJECT_NAME})  # source code
 
-# ----------------------------------------------------------------------
-# Packaging utility
-
-
-#
-# ======================================================================
-cet_cmake_config(COMPATIBILITY SameMajorVersion)
+cet_cmake_config(CONFIG_POST_TARGET_VARS
+  config/hep_concurrency-augment-HEP_CONCURRENCY.cmake)

@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include "hep_concurrency/cache.h"
-#include "hep_concurrency/test/interval_of_validity.h"
+#include "interval_of_validity.h"
 
 #include "tbb/parallel_for_each.h"
 

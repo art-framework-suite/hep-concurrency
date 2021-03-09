@@ -2,18 +2,20 @@
 #define hep_concurrency_SerialTaskQueue_h
 // vim: set sw=2 expandtab :
 
-#include "hep_concurrency/RecursiveMutex.h"
-#include "hep_concurrency/tsan.h"
-#include "tbb/task.h"
+#include "tbb/task_group.h"
 
 #include <atomic>
+#include <functional>
+#include <mutex>
 #include <queue>
 
 namespace hep::concurrency {
 
+  using task_t = std::function<void()>;
+
   class SerialTaskQueue final {
   public:
-    SerialTaskQueue() = default;
+    SerialTaskQueue(tbb::task_group& group) : group_{&group} {}
 
     // Disable copy operations
     SerialTaskQueue(SerialTaskQueue const&) = delete;
@@ -26,76 +28,55 @@ namespace hep::concurrency {
     bool resume();
 
     // Used only by QueuedTask<T>::execute().
-    tbb::task* notify();
+    void notify_and_run();
 
   private:
-    void pushTask(tbb::task*);
-    tbb::task* pickNextTask();
+    class QueuedTask;
+    using task_ptr_t = std::shared_ptr<QueuedTask>;
 
-    hep::concurrency::RecursiveMutex mutex_{"SerialTaskQueue::mutex_"};
-    std::queue<tbb::task*> taskQueue_{};
+    auto pickNextTask() -> task_ptr_t;
+    auto notify() -> task_ptr_t;
+
+    tbb::task_group* group_;
+    std::recursive_mutex mutex_{};
+    std::queue<task_ptr_t> taskQueue_{};
     unsigned long pauseCount_{};
     bool taskRunning_{false};
   };
 
-  template <typename F>
-  class QueuedTask final : public tbb::task {
+  class SerialTaskQueue::QueuedTask {
   public:
-    QueuedTask(SerialTaskQueue*, F&& func);
-    ~QueuedTask() override;
+    QueuedTask(SerialTaskQueue* queue, task_t func)
+      : queue_{queue}, func_{std::move(func)}
+    {}
+
+    explicit operator bool() const { return static_cast<bool>(func_); }
+
+    void
+    operator()() const
+    {
+      try {
+        func_();
+      }
+      catch (...) {
+      }
+      queue_->notify_and_run();
+    }
 
   private:
-    tbb::task* execute() override;
-
-    // Used to call notify() when the functor returns.
-    std::atomic<SerialTaskQueue*> queue_;
-    F func_;
+    SerialTaskQueue* queue_;
+    task_t func_;
   };
-
-  template <typename F>
-  QueuedTask<F>::~QueuedTask()
-  {
-    ANNOTATE_BENIGN_RACE_SIZED(reinterpret_cast<char*>(&tbb::task::self()) -
-                                 sizeof(tbb::internal::task_prefix),
-                               sizeof(tbb::task) +
-                                 sizeof(tbb::internal::task_prefix),
-                               "tbb::task");
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    queue_ = nullptr;
-    ANNOTATE_THREAD_IGNORE_END;
-  }
-
-  template <typename F>
-  QueuedTask<F>::QueuedTask(SerialTaskQueue* queue, F&& func)
-    : queue_{queue}, func_{std::forward<F>(func)}
-  {}
-
-  template <typename F>
-  tbb::task*
-  QueuedTask<F>::execute()
-  {
-    try {
-      func_();
-    }
-    catch (...) {
-    }
-    auto ret = queue_.load()->notify();
-    if (ret != nullptr) {
-      tbb::task::spawn(*ret);
-    }
-    return nullptr;
-  }
 
   template <typename F>
   void
   SerialTaskQueue::push(F&& func)
   {
-    hep::concurrency::RecursiveMutexSentry sentry{mutex_, __func__};
-    ANNOTATE_THREAD_IGNORE_BEGIN;
-    tbb::task* p = new (tbb::task::allocate_root())
-      QueuedTask<F>{this, std::forward<F>(func)};
-    ANNOTATE_THREAD_IGNORE_END;
-    pushTask(p);
+    std::lock_guard sentry{mutex_};
+    taskQueue_.push(std::make_shared<QueuedTask>(this, std::forward<F>(func)));
+    if (auto next_task = pickNextTask()) {
+      group_->run(*next_task);
+    }
   }
 
 } // namespace hep::concurrency

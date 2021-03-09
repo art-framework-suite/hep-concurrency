@@ -249,14 +249,13 @@ libdir	fq_dir	lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-cetlib_except	v1_06_00	-
+cetlib_except	v1_07_00	-
 clang		v7_0_0		c7
 gcc		v8_2_0		e19
 gcc		v9_3_0		e20
-tbb		v2020_2a	-
-catch		v2_12_2		-	only_for_build
-cetmodules	v2_08_02	-	only_for_build
-cppunit		v1_15_1a	-	only_for_build
+tbb		v2021_1_1	-
+catch		v2_13_4a		-	only_for_build
+cetmodules	v2_13_01	-	only_for_build
 end_product_list
 ####################################
 
@@ -311,13 +310,13 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	cppunit		gcc	clang	tbb		cetlib_except	compiler	notes
-c7:debug	c7:debug	-	-nq-	c7:debug	c7:debug	clang
-c7:prof		c7:prof		-	-nq-	c7:prof		c7:prof		clang
-e19:debug	e19:debug	-nq-	-	e19:debug	e19:debug	gcc
-e19:prof	e19:prof	-nq-	-	e19:prof	e19:prof	gcc
-e20:debug	e20:debug	-nq-	-	e20:debug	e20:debug	gcc
-e20:prof	e20:prof	-nq-	-	e20:prof	e20:prof	gcc
+qualifier	gcc	clang	tbb	cetlib_except	compiler	notes
+c7:debug	-	-nq-	c7	c7:debug	clang
+c7:prof		-	-nq-	c7	c7:prof		clang
+e19:debug	-nq-	-	e19	e19:debug	gcc
+e19:prof	-nq-	-	e19	e19:prof	gcc
+e20:debug	-nq-	-	e20	e20:debug	gcc
+e20:prof	-nq-	-	e20	e20:prof	gcc
 end_qualifier_list
 ####################################
 

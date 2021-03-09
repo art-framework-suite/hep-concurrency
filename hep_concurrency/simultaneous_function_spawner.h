@@ -24,7 +24,7 @@
 //   tasks.push_back([&nums]{ nums[1] = 23; });
 //   hep::concurrency::simultaneous_function_spawner sps {tasks};
 //
-// The number of threads spawned is equan to the number of tasks
+// The number of threads spawned is equal to the number of tasks
 // supplied.
 //
 // The waiting mechanism here could be replaced with a
