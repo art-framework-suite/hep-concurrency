@@ -34,7 +34,8 @@ namespace hep::concurrency::test {
       return range_ == other.range_;
     }
 
-    std::size_t hash() const noexcept
+    std::size_t
+    hash() const noexcept
     {
       return hasher_(range_.first) ^ hasher_(range_.second);
     }
