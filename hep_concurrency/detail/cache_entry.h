@@ -30,12 +30,12 @@ namespace hep::concurrency::detail {
 
   using entry_count_ptr = std::shared_ptr<entry_count>;
 
-  auto
+  inline auto
   make_counter(std::size_t const sequence_number, unsigned int offset = 0)
   {
     return std::make_shared<entry_count>(sequence_number, offset);
   }
-  auto
+  inline auto
   make_invalid_counter()
   {
     return make_counter(-1ull, -1u);
