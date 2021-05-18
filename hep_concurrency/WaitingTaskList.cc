@@ -2,13 +2,11 @@
 #include "hep_concurrency/WaitingTaskList.h"
 
 #include "hep_concurrency/WaitingTask.h"
-#include "hep_concurrency/hardware_pause.h"
-#include "hep_concurrency/tsan.h"
 #include "tbb/task_group.h"
 
-#include <atomic>
 #include <cassert>
 #include <exception>
+#include <memory>
 #include <queue>
 
 using namespace std;

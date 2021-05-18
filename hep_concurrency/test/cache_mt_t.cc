@@ -6,6 +6,9 @@
 #include "tbb/parallel_for_each.h"
 
 #include <algorithm>
+#include <atomic>
+#include <memory>
+#include <numeric>
 #include <random>
 #include <string>
 #include <utility>

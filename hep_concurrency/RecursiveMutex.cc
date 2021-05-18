@@ -1,16 +1,13 @@
 #include "hep_concurrency/RecursiveMutex.h"
+#include "hep_concurrency/tsan.h"
 // vim: set sw=2 expandtab :
 
-#include <atomic>
 #include <condition_variable>
 #include <cstdlib>
-#include <exception>
 #include <iomanip>
 #include <iostream>
 #include <map>
 #include <mutex>
-#include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
