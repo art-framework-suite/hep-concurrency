@@ -2,9 +2,7 @@
 // vim: set sw=2 expandtab :
 
 #include <fstream>
-#include <sstream>
 #include <string>
-#include <utility>
 
 using namespace std;
 

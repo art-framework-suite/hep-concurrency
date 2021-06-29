@@ -3,7 +3,6 @@
 
 #include <atomic>
 #include <exception>
-#include <memory>
 
 using namespace std;
 

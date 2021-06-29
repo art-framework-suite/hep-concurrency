@@ -4,8 +4,8 @@
 
 #include "tbb/task_group.h"
 
-#include <atomic>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <queue>
 

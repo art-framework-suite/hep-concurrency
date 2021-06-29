@@ -1,12 +1,11 @@
+
 #ifndef hep_concurrency_SerialTaskQueueChain_h
 #define hep_concurrency_SerialTaskQueueChain_h
 // vim: set sw=2 expandtab :
 
 #include "hep_concurrency/SerialTaskQueue.h"
 
-#include <atomic>
 #include <cassert>
-#include <exception>
 #include <memory>
 #include <mutex>
 #include <vector>
