@@ -1,7 +1,7 @@
 include(CetTest)
 cet_enable_asserts()
 
-cet_find_package(Catch2 PRIVATE REQUIRED)
+find_package(Catch2 PRIVATE REQUIRED)
 
 # Put everything in a different export set.
 cet_register_export_set(SET_NAME Testing
