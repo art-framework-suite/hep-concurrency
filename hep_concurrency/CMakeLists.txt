@@ -10,7 +10,6 @@ cet_make_library(LIBRARY_NAME macros INTERFACE
 
 cet_make_library(HEADERS_TARGET
   SOURCE
-    RecursiveMutex.cc
     SerialTaskQueue.cc
     SerialTaskQueueChain.cc
     ThreadSafeOutputFileStream.cc
