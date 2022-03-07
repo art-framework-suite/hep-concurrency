@@ -249,13 +249,13 @@ libdir	fq_dir	lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-cetlib_except	v1_07_05	-
+cetlib_except	v1_07_06	-
 clang		v7_0_0		c7
 gcc		v8_2_0		e19
 gcc		v9_3_0		e20
 tbb		v2021_4_0	-
 catch		v2_13_7		-	only_for_build
-cetmodules	v2_29_14	-	only_for_build
+cetmodules	v3_07_00	-	only_for_build
 end_product_list
 ####################################
 
