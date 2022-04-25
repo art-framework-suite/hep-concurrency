@@ -255,7 +255,7 @@ gcc		v8_2_0		e19
 gcc		v9_3_0		e20
 tbb		v2021_4_0	-
 catch		v2_13_7		-	only_for_build
-cetmodules	v3_08_00	-	only_for_build
+cetmodules	v3_11_03	-	only_for_build
 end_product_list
 ####################################
 
