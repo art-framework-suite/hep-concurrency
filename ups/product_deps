@@ -253,9 +253,9 @@ cetlib_except	v1_07_06	-
 clang		v7_0_0		c7
 gcc		v8_2_0		e19
 gcc		v9_3_0		e20
-tbb		v2021_4_0	-
-catch		v2_13_7		-	only_for_build
-cetmodules	v3_11_03	-	only_for_build
+tbb		v2021_5_0	-
+catch		v2_13_9		-	only_for_build
+cetmodules	v3_13_01	-	only_for_build
 end_product_list
 ####################################
 
