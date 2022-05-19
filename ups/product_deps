@@ -316,6 +316,8 @@ e24:debug	-nq-	-	e24	e24:debug
 e24:prof	-nq-	-	e24	e24:prof
 e25:debug	-nq-	-	e25	e25:debug
 e25:prof	-nq-	-	e25	e25:prof
+e26:debug	-nq-	-	e26	e26:debug
+e26:prof	-nq-	-	e26	e26:prof
 end_qualifier_list
 ####################################
 
