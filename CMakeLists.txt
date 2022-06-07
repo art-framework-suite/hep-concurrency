@@ -33,7 +33,7 @@ endif()
 cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED PUBLIC)
+find_package(Threads REQUIRED EXPORT)
 
 add_subdirectory(${PROJECT_NAME})  # source code
 
