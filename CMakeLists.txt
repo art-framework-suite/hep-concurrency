@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18.2 FATAL_ERROR)
 
 find_package(cetmodules 2.13.00 REQUIRED)
-project(hep_concurrency VERSION 1.07.06 LANGUAGES CXX)
+project(hep_concurrency VERSION 1.08.00 LANGUAGES CXX)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -33,7 +33,7 @@ endif()
 cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED PUBLIC)
+find_package(Threads REQUIRED EXPORT)
 
 add_subdirectory(${PROJECT_NAME})  # source code
 

@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		hep_concurrency
-defaultqual	e19
+defaultqual	e20
 ####################################
 
 ####################################
@@ -249,13 +249,10 @@ libdir	fq_dir	lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-cetlib_except	v1_07_06	-
-clang		v7_0_0		c7
-gcc		v8_2_0		e19
-gcc		v9_3_0		e20
-tbb		v2021_4_0	-
-catch		v2_13_7		-	only_for_build
-cetmodules	v3_07_00	-	only_for_build
+cetlib_except	v1_08_00	-
+tbb		v2021_7_0	-
+catch		v2_13_9		-	only_for_build
+cetmodules	v3_19_02	-	only_for_build
 end_product_list
 ####################################
 
@@ -310,13 +307,15 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	gcc	clang	tbb	cetlib_except	compiler	notes
-c7:debug	-	-nq-	c7	c7:debug	clang
-c7:prof		-	-nq-	c7	c7:prof		clang
-e19:debug	-nq-	-	e19	e19:debug	gcc
-e19:prof	-nq-	-	e19	e19:prof	gcc
-e20:debug	-nq-	-	e20	e20:debug	gcc
-e20:prof	-nq-	-	e20	e20:prof	gcc
+qualifier	tbb	cetlib_except	notes
+c7:debug	c7	c7:debug
+c7:prof		c7	c7:prof
+c14:debug	c14	c14:debug
+c14:prof	c14	c14:prof
+e20:debug	e20	e20:debug
+e20:prof	e20	e20:prof
+e26:debug	e26	e26:debug
+e26:prof	e26	e26:prof
 end_qualifier_list
 ####################################
 

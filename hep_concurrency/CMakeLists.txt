@@ -1,5 +1,5 @@
-find_package(TBB REQUIRED PUBLIC)
-find_package(cetlib_except REQUIRED PUBLIC)
+find_package(TBB REQUIRED EXPORT)
+find_package(cetlib_except REQUIRED EXPORT)
 
 cet_make_library(LIBRARY_NAME macros INTERFACE
   SOURCE

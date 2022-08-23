@@ -205,7 +205,7 @@ namespace hep::concurrency {
   }
 
   template <typename Key, typename Value>
-  cache_handle<Key, Value>::~cache_handle()
+  cache_handle<Key, Value>::~cache_handle<Key, Value>()
   {
     invalidate();
   }
