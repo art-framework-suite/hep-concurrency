@@ -31,9 +31,7 @@ foreach(test IN ITEMS
     LIBRARIES PRIVATE hep_concurrency::hep_concurrency)
 endforeach()
 
-if( ${BUILD_TESTING} )
 target_link_libraries(waiting_task_list_t PRIVATE TBB::tbb)
-endif()
 
 cet_test(simultaneous_function_spawner_t USE_CATCH2_MAIN
   LIBRARIES PRIVATE hep_concurrency::simultaneous_function_spawner
@@ -48,7 +46,5 @@ foreach (target IN ITEMS cache_handle_t cache_mt_t cache_t)
     LIBRARIES PRIVATE hep_concurrency::cache TBB::tbb)
 endforeach()
 
-if( ${BUILD_TESTING} )
 target_link_libraries(cache_handle_t PRIVATE cetlib_except::Catch2Matchers)
 target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)
-endif()
