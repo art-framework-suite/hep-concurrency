@@ -1,6 +1,7 @@
 #include "hep_concurrency/simultaneous_function_spawner.h"
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <functional>
 #include <iostream>
 
 using namespace hep::concurrency;

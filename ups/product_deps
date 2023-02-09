@@ -250,9 +250,9 @@ libdir	fq_dir	lib
 ####################################
 product		version		qual	flags		<table_format=2>
 cetlib_except	v1_08_00	-
-tbb		v2021_7_0	-
-catch		v2_13_9		-	only_for_build
-cetmodules	v3_19_02	-	only_for_build
+tbb		v2021_8_0	-
+catch		v3_3_1a		-	only_for_build
+cetmodules	v3_20_01	-	only_for_build
 end_product_list
 ####################################
 
@@ -307,15 +307,17 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	tbb	cetlib_except	notes
-c7:debug	c7	c7:debug
-c7:prof		c7	c7:prof
-c14:debug	c14	c14:debug
-c14:prof	c14	c14:prof
-e20:debug	e20	e20:debug
-e20:prof	e20	e20:prof
-e26:debug	e26	e26:debug
-e26:prof	e26	e26:prof
+qualifier	catch	tbb	cetlib_except	notes
+c14:debug	c14	c14	c14:debug
+c14:prof	c14	c14	c14:prof
+c15:debug	c15	c15	c15:debug
+c15:prof	c15	c15	c15:prof
+e20:debug	e20	e20	e20:debug
+e20:prof	e20	e20	e20:prof
+e26:debug	e26	e26	e26:debug
+e26:prof	e26	e26	e26:prof
+e27:debug	e27	e27	e27:debug
+e27:prof	e27	e27	e27:prof
 end_qualifier_list
 ####################################
 
