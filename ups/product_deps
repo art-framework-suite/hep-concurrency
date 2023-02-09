@@ -252,7 +252,7 @@ product		version		qual	flags		<table_format=2>
 cetlib_except	v1_08_00	-
 tbb		v2021_8_0	-
 catch		v3_3_1a		-	only_for_build
-cetmodules	v3_20_01	-	only_for_build
+cetmodules	v3_21_00	-	only_for_build
 end_product_list
 ####################################
 
