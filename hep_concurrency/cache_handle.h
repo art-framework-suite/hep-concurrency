@@ -41,7 +41,9 @@ namespace hep::concurrency {
   public:
     static constexpr cache_handle invalid() noexcept;
     explicit cache_handle(Key const* key, detail::cache_entry<Value>* entry);
-    ~cache_handle();
+    ~cache_handle() noexcept {
+      invalidate();
+    }
 
     cache_handle(cache_handle const& other);
     cache_handle& operator=(cache_handle const& other);
@@ -63,7 +65,7 @@ namespace hep::concurrency {
     bool operator!=(cache_handle other) const;
 
     // Remove access to cache entry
-    void invalidate();
+    void invalidate() noexcept;
 
   private:
     constexpr cache_handle() = default;
@@ -195,19 +197,13 @@ namespace hep::concurrency {
 
   template <typename Key, typename Value>
   void
-  cache_handle<Key, Value>::invalidate()
+  cache_handle<Key, Value>::invalidate() noexcept
   {
     if (key_ != nullptr and entry_ != nullptr) {
       entry_->decrement_reference_count();
     }
     key_ = nullptr;
     entry_ = nullptr;
-  }
-
-  template <typename Key, typename Value>
-  cache_handle<Key, Value>::~cache_handle()
-  {
-    invalidate();
   }
 
 }
