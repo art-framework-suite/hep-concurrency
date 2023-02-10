@@ -19,8 +19,8 @@ TEST_CASE("simple")
     using Catch::Matchers::ContainsSubstring;
     CHECK_THROWS_MATCHES(*h,
                          cet::exception,
-                         cet::exception_message_matcher(
-                           ContainsSubstring("Invalid cache handle dereference.")));
+                         cet::exception_message_matcher(ContainsSubstring(
+                           "Invalid cache handle dereference.")));
   }
   cache.emplace("Alice", 97);
   CHECK(size(cache) == 1ull);

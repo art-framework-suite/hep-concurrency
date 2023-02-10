@@ -9,7 +9,10 @@ using namespace std;
 namespace hep {
   namespace concurrency {
 
-    ThreadSafeOutputFileStream::~ThreadSafeOutputFileStream() { file_.close(); }
+    ThreadSafeOutputFileStream::~ThreadSafeOutputFileStream()
+    {
+      file_.close();
+    }
 
     ThreadSafeOutputFileStream::ThreadSafeOutputFileStream(
       string const& filename)

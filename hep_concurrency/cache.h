@@ -133,13 +133,15 @@ namespace hep::concurrency {
 
   template <typename Key, typename Value>
   class cache {
-    using count_map_t = tbb::concurrent_unordered_map<Key,
-                                                      detail::entry_count_ptr,
-                                                      detail::counter_hasher<Key>>;
+    using count_map_t =
+      tbb::concurrent_unordered_map<Key,
+                                    detail::entry_count_ptr,
+                                    detail::counter_hasher<Key>>;
     using count_value_type = typename count_map_t::value_type;
-    using collection_t = tbb::concurrent_hash_map<Key,
-                                                  detail::cache_entry<Value>,
-                                                  detail::collection_hasher<Key>>;
+    using collection_t =
+      tbb::concurrent_hash_map<Key,
+                               detail::cache_entry<Value>,
+                               detail::collection_hasher<Key>>;
     using accessor = typename collection_t::accessor;
 
   public:
@@ -169,8 +171,9 @@ namespace hep::concurrency {
     handle entry_for(handle hint, T const& t) const;
 
     template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Value>, handle>
-    emplace(Key const& k, T&& value);
+    std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
+      Key const& k,
+      T&& value);
 
     // Memory mitigations that remove unused cache entries
     void drop_unused();
@@ -178,9 +181,21 @@ namespace hep::concurrency {
 
     // Thread-safe, but no synchronization
     // -----------------------------------
-    size_t size() const { return std::size(entries_); }
-    bool empty() const { return std::empty(entries_); }
-    size_t capacity() const { return std::size(counts_); }
+    size_t
+    size() const
+    {
+      return std::size(entries_);
+    }
+    bool
+    empty() const
+    {
+      return std::empty(entries_);
+    }
+    size_t
+    capacity() const
+    {
+      return std::size(counts_);
+    }
 
     // Thread-unsafe
     // -------------
@@ -205,7 +220,6 @@ namespace hep::concurrency {
     collection_t entries_;
     count_map_t counts_;
   };
-
 
   template <typename Key, typename Value>
   template <typename T>
@@ -293,7 +307,8 @@ namespace hep::concurrency {
   {
     auto entries_to_drop = unused_entries_();
     // Sort in reverse-chronological order (according to sequence number).
-    std::sort(begin(entries_to_drop), end(entries_to_drop),
+    std::sort(begin(entries_to_drop),
+              end(entries_to_drop),
               [](auto const& a, auto const& b) { return a.first > b.first; });
 
     if (std::size(entries_to_drop) <= keep_last) {

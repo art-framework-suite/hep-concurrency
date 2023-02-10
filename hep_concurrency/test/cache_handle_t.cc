@@ -25,8 +25,8 @@ TEST_CASE("Invalid handle")
                          ContainsSubstring("Invalid sequence-number access.")));
   CHECK_THROWS_MATCHES(*h,
                        cet::exception,
-                       cet::exception_message_matcher(
-                         ContainsSubstring("Invalid cache handle dereference.")));
+                       cet::exception_message_matcher(ContainsSubstring(
+                         "Invalid cache handle dereference.")));
 }
 
 TEST_CASE("One entry")
@@ -54,8 +54,8 @@ TEST_CASE("Invalidate handle")
                          ContainsSubstring("Invalid sequence-number access.")));
   CHECK_THROWS_MATCHES(*h,
                        cet::exception,
-                       cet::exception_message_matcher(
-                         ContainsSubstring("Invalid cache handle dereference.")));
+                       cet::exception_message_matcher(ContainsSubstring(
+                         "Invalid cache handle dereference.")));
 }
 
 TEST_CASE("Copy-construct handle")

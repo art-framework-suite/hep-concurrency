@@ -41,9 +41,7 @@ namespace hep::concurrency {
   public:
     static constexpr cache_handle invalid() noexcept;
     explicit cache_handle(Key const* key, detail::cache_entry<Value>* entry);
-    ~cache_handle() noexcept {
-      invalidate();
-    }
+    ~cache_handle() noexcept { invalidate(); }
 
     cache_handle(cache_handle const& other);
     cache_handle& operator=(cache_handle const& other);
@@ -141,7 +139,8 @@ namespace hep::concurrency {
   }
 
   template <typename Key, typename Value>
-  Value const& cache_handle<Key, Value>::operator*() const
+  Value const&
+  cache_handle<Key, Value>::operator*() const
   {
     if (entry_ == nullptr) {
       throw cet::exception("Invalid cache handle dereference.")
@@ -151,7 +150,8 @@ namespace hep::concurrency {
   }
 
   template <typename Key, typename Value>
-  Value const* cache_handle<Key, Value>::operator->() const
+  Value const*
+  cache_handle<Key, Value>::operator->() const
   {
     return &this->operator*();
   }
