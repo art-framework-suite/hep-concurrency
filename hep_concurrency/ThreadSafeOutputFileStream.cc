@@ -26,7 +26,7 @@ namespace hep {
     ThreadSafeOutputFileStream::write(string&& msg)
     {
       std::lock_guard sentry{mutex_};
-      file_ << forward<string>(msg);
+      file_ << std::forward<string>(msg);
     }
 
   } // namespace concurrency
