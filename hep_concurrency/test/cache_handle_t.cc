@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "cetlib_except/exception_message_matcher.h"
 #include "hep_concurrency/cache.h"
@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-using Catch::Matchers::Contains;
+using Catch::Matchers::ContainsSubstring;
 using namespace hep::concurrency;
 
 TEST_CASE("Invalid handle")
@@ -18,15 +18,15 @@ TEST_CASE("Invalid handle")
   CHECK_THROWS_MATCHES(
     h.key(),
     cet::exception,
-    cet::exception_message_matcher(Contains("Invalid key access.")));
+    cet::exception_message_matcher(ContainsSubstring("Invalid key access.")));
   CHECK_THROWS_MATCHES(h.sequence_number(),
                        cet::exception,
                        cet::exception_message_matcher(
-                         Contains("Invalid sequence-number access.")));
+                         ContainsSubstring("Invalid sequence-number access.")));
   CHECK_THROWS_MATCHES(*h,
                        cet::exception,
-                       cet::exception_message_matcher(
-                         Contains("Invalid cache handle dereference.")));
+                       cet::exception_message_matcher(ContainsSubstring(
+                         "Invalid cache handle dereference.")));
 }
 
 TEST_CASE("One entry")
@@ -47,15 +47,15 @@ TEST_CASE("Invalidate handle")
   CHECK_THROWS_MATCHES(
     h.key(),
     cet::exception,
-    cet::exception_message_matcher(Contains("Invalid key access.")));
+    cet::exception_message_matcher(ContainsSubstring("Invalid key access.")));
   CHECK_THROWS_MATCHES(h.sequence_number(),
                        cet::exception,
                        cet::exception_message_matcher(
-                         Contains("Invalid sequence-number access.")));
+                         ContainsSubstring("Invalid sequence-number access.")));
   CHECK_THROWS_MATCHES(*h,
                        cet::exception,
-                       cet::exception_message_matcher(
-                         Contains("Invalid cache handle dereference.")));
+                       cet::exception_message_matcher(ContainsSubstring(
+                         "Invalid cache handle dereference.")));
 }
 
 TEST_CASE("Copy-construct handle")

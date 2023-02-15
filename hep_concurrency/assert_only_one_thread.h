@@ -70,7 +70,10 @@ namespace hep::concurrency::detail {
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()                               \
   static hep::concurrency::detail::thread_counter s_tc_{                       \
     __FILE__, __LINE__, __func__};                                             \
-  hep::concurrency::detail::thread_counter::sentry sentry_tc_ { s_tc_ }
+  hep::concurrency::detail::thread_counter::sentry sentry_tc_                  \
+  {                                                                            \
+    s_tc_                                                                      \
+  }
 #endif // NDEBUG
 
 #endif /* hep_concurrency_assert_only_one_thread_h */

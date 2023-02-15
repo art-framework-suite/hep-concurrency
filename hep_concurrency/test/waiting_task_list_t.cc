@@ -2,7 +2,7 @@
 // the initial implementation of the WaitingTaskList.  They have been
 // subsequently adjusted to support TBB's changing interface.
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "hep_concurrency/WaitingTaskList.h"
 #include "tbb/task_group.h"

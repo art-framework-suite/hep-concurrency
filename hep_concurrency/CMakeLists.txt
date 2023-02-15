@@ -44,4 +44,6 @@ cet_make_library(LIBRARY_NAME cache INTERFACE
 install_headers(SUBDIRS detail)
 install_source(SUBDIRS detail)
 
-add_subdirectory(test)
+if (BUILD_TESTING)
+  add_subdirectory(test)
+endif()

@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "cetlib_except/exception_message_matcher.h"
 #include "hep_concurrency/cache.h"
@@ -16,11 +16,11 @@ TEST_CASE("simple")
   {
     auto h = cache.at("Alice");
     CHECK(not h);
-    using Catch::Matchers::Contains;
+    using Catch::Matchers::ContainsSubstring;
     CHECK_THROWS_MATCHES(*h,
                          cet::exception,
-                         cet::exception_message_matcher(
-                           Contains("Invalid cache handle dereference.")));
+                         cet::exception_message_matcher(ContainsSubstring(
+                           "Invalid cache handle dereference.")));
   }
   cache.emplace("Alice", 97);
   CHECK(size(cache) == 1ull);

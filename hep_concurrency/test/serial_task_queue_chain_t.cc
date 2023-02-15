@@ -2,7 +2,7 @@
 // the initial implementation of the SerialTaskQueueChain.  They have
 // been subsequently adjusted to support TBB's changing interface.
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 // Catch2's macros cannot generally be invoked concurrently from
 // multiple threads.  However, because the SerialTaskQueueChain

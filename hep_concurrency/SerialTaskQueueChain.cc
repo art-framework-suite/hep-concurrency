@@ -10,7 +10,7 @@ namespace hep::concurrency {
 
   SerialTaskQueueChain::SerialTaskQueueChain(
     vector<shared_ptr<SerialTaskQueue>> queues)
-    : queues_{move(queues)}
+    : queues_{std::move(queues)}
   {}
 
 } // namespace hep::concurrency

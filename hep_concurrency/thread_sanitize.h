@@ -33,7 +33,11 @@ namespace hep {
         return *this;
       }
 
-      T* operator->() const { return obj_.load(); }
+      T*
+      operator->() const
+      {
+        return obj_.load();
+      }
 
       ~thread_sanitize() noexcept
       {
@@ -72,8 +76,16 @@ namespace hep {
       {
         return obj_.load();
       }
-      T& operator*() const { return *get(); }
-      T* operator->() const { return get(); }
+      T&
+      operator*() const
+      {
+        return *get();
+      }
+      T*
+      operator->() const
+      {
+        return get();
+      }
 
       ~thread_sanitize_unique_ptr() noexcept
       {
