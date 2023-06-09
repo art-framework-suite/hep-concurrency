@@ -4,6 +4,10 @@
 // vim: set sw=2 expandtab :
 
 #include "hep_concurrency/SerialTaskQueue.h"
+#include "cetlib_except/cxx20_macros.h"
+#if CET_CONCEPTS_AVAILABLE
+#include <concepts>
+#endif
 
 #include <cassert>
 #include <memory>
@@ -23,27 +27,43 @@ namespace hep::concurrency {
     SerialTaskQueueChain& operator=(SerialTaskQueueChain const&) = delete;
     SerialTaskQueueChain& operator=(SerialTaskQueueChain&&) = delete;
 
+#if CET_CONCEPTS_AVAILABLE
+    template <detail::convertible_to_task_t F>
+#else
     template <typename F>
+#endif
     void push(F&&);
 
   private:
+#if CET_CONCEPTS_AVAILABLE
+    template <detail::convertible_to_task_t F>
+#else
     template <typename F>
+#endif
     void passDown(unsigned int, F&&);
+#if CET_CONCEPTS_AVAILABLE
+    template <detail::convertible_to_task_t F>
+#else
     template <typename F>
+#endif
     void runFunc(F const&);
 
     std::recursive_mutex mutex_{};
     std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
   };
 
+#if CET_CONCEPTS_AVAILABLE
+  template <detail::convertible_to_task_t F>
+#else
   template <typename F>
+#endif
   void
   SerialTaskQueueChain::push(F&& func)
   {
     std::lock_guard sentry{mutex_};
     assert(queues_.size() > 0);
     if (queues_.size() == 1) {
-      queues_[0]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+      queues_[0]->push([this, f = std::forward<F>(func)]() { runFunc(f); });
     } else {
       queues_[0]->push([this, f = std::forward<F>(func)]() mutable {
         passDown(1, std::forward<F>(f));
@@ -51,14 +71,18 @@ namespace hep::concurrency {
     }
   }
 
+#if CET_CONCEPTS_AVAILABLE
+  template <detail::convertible_to_task_t F>
+#else
   template <typename F>
+#endif
   void
   SerialTaskQueueChain::passDown(unsigned int idx, F&& func)
   {
     std::lock_guard sentry{mutex_};
     queues_[idx - 1]->pause();
     if ((idx + 1) == queues_.size()) {
-      queues_[idx]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+      queues_[idx]->push([this, f = std::forward<F>(func)]() { runFunc(f); });
     } else {
       auto nxt = idx + 1;
       queues_[idx]->push([this, nxt, f = std::forward<F>(func)]() mutable {
@@ -67,7 +91,11 @@ namespace hep::concurrency {
     }
   }
 
+#if CET_CONCEPTS_AVAILABLE
+  template <detail::convertible_to_task_t F>
+#else
   template <typename F>
+#endif
   void
   SerialTaskQueueChain::runFunc(F const& func)
   {
