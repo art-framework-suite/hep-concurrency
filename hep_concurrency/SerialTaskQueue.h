@@ -32,7 +32,11 @@ namespace hep::concurrency {
     SerialTaskQueue(SerialTaskQueue const&) = delete;
     SerialTaskQueue& operator=(SerialTaskQueue const&) = delete;
 
+#if CET_CONCEPTS_AVAILABLE
+    template <detail::convertible_to_task_t F>
+#else
     template <typename F>
+#endif
     void push(F&& func);
 
     bool pause();
@@ -80,17 +84,10 @@ namespace hep::concurrency {
   };
 
 #if CET_CONCEPTS_AVAILABLE
-  template<typename F>
-  requires convertible_to_task_t<F>
-  void SerialTaskQueue::push(F&& func){
-    std::lock_guard sentry{mutex_};
-    taskQueue_.push(std::make_shared<QueuedTask>(this, std::forward<F>(func)));
-    if (auto next_task = pickNextTask()) {
-      group_ -> run(*next_task);
-    }
-  }
+  template <detail::convertible_to_task_t F>
 #else
   template <typename F>
+#endif
   void SerialTaskQueue::push(F&& func)
   {
     std::lock_guard sentry{mutex_};
@@ -99,7 +96,6 @@ namespace hep::concurrency {
       group_->run(*next_task);
     }
   }
-#endif
 
 } // namespace hep::concurrency
 
