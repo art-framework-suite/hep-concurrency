@@ -17,6 +17,13 @@ namespace hep::concurrency {
   
   using task_t = std::function<void()>;
 
+#if CET_CONCEPTS_AVAILABLE
+  namespace detail {
+    template<typename F>
+    concept convertible_to_task_t = std::is_convertible_v<F, task_t>;
+  }
+#endif
+
   class SerialTaskQueue final {
   public:
     SerialTaskQueue(tbb::task_group& group) : group_{&group} {}
@@ -73,9 +80,6 @@ namespace hep::concurrency {
   };
 
 #if CET_CONCEPTS_AVAILABLE
-  template<typename F>
-  concept convertible_to_task_t = std::is_convertible_v<F, task_t>;
-
   template<typename F>
   requires convertible_to_task_t<F>
   void SerialTaskQueue::push(F&& func){
