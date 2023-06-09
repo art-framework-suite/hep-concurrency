@@ -50,3 +50,4 @@ target_link_libraries(cache_handle_t PRIVATE cetlib_except::Catch2Matchers)
 target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)
 
 cet_test(bad_conversion_task_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
+cet_test(chain_bad_conversion_task_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
