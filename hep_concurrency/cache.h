@@ -8,7 +8,7 @@
 //
 // The cache class template, implemented below, provides a means of
 // caching data in a thread-safe manner, using TBB's
-// concurrent_(unordered|hash)_map faciliies.
+// concurrent_(unordered|hash)_map facilities.
 //
 // The user interface includes the cache and the cache_handle
 // templates.  A cache_handle object is used to provid immutable
@@ -120,7 +120,6 @@
 #include "hep_concurrency/detail/cache_entry.h"
 #include "hep_concurrency/detail/cache_hashers.h"
 #include "hep_concurrency/detail/cache_key_supports.h"
-
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/concurrent_unordered_map.h"
 
@@ -133,7 +132,12 @@
 namespace hep::concurrency {
 
   namespace detail {
+
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     class cache_impl {
       using count_map_t =
         tbb::concurrent_unordered_map<Key,
@@ -145,8 +149,8 @@ namespace hep::concurrency {
                                  detail::cache_entry<Value>,
                                  detail::collection_hasher<Key>>;
       using accessor = typename collection_t::accessor;
-
-  public:
+  
+    public:
       using mapped_type = typename collection_t::mapped_type;
       using value_type = typename collection_t::value_type;
       using handle = cache_handle<Key, Value>;
@@ -224,7 +228,11 @@ namespace hep::concurrency {
     };
 
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     template <typename T>
     std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
     cache_impl<Key, Value>::emplace(Key const& key, T&& value)
@@ -247,7 +255,11 @@ namespace hep::concurrency {
       return handle{&access_token->first, &access_token->second};
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     cache_handle<Key, Value>
     cache_impl<Key, Value>::at(Key const& key) const
     {
@@ -256,7 +268,11 @@ namespace hep::concurrency {
       return handle::invalid();
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     template <typename T>
     cache_handle<Key, Value>
     cache_impl<Key, Value>::entry_for(T const& t) const
@@ -282,7 +298,11 @@ namespace hep::concurrency {
       return at(matching_keys[0]);
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     template <typename T>
     cache_handle<Key, Value>
     cache_impl<Key, Value>::entry_for(handle const hint, T const& t) const
@@ -297,14 +317,22 @@ namespace hep::concurrency {
       return entry_for(t);
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     void
     cache_impl<Key, Value>::drop_unused()
     {
       drop_unused_but_last(0);
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     void
     cache_impl<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
     {
@@ -343,7 +371,11 @@ namespace hep::concurrency {
       }
     }
 
+    #if CET_CONCEPTS_AVAILABLE
+    template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
+    #else
     template <typename Key, typename Value>
+    #endif
     void
     cache_impl<Key, Value>::shrink_to_fit()
     {
