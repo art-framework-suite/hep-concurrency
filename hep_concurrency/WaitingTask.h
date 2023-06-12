@@ -74,11 +74,9 @@ namespace hep::concurrency {
 
   using WaitingTaskPtr = std::shared_ptr<WaitingTask>;
   
+  template <typename T, typename... Args>
   #if CET_CONCEPTS_AVAILABLE
-  template <typename T, typename... Args>
     requires detail::waiting_task_compatible<T, Args...>
-  #else
-  template <typename T, typename... Args>
   #endif
   WaitingTaskPtr
   make_waiting_task(Args&&... args)
