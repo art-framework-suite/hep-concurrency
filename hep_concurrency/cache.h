@@ -115,6 +115,7 @@
 
 #include "cetlib_except/exception.h"
 #include "hep_concurrency/assert_only_one_thread.h"
+#include "hep_concurrency/cache_fwd.h"
 #include "hep_concurrency/cache_handle.h"
 #include "hep_concurrency/detail/cache_entry.h"
 #include "hep_concurrency/detail/cache_hashers.h"
@@ -131,231 +132,233 @@
 
 namespace hep::concurrency {
 
-  template <typename Key, typename Value>
-  class cache {
-    using count_map_t =
-      tbb::concurrent_unordered_map<Key,
-                                    detail::entry_count_ptr,
-                                    detail::counter_hasher<Key>>;
-    using count_value_type = typename count_map_t::value_type;
-    using collection_t =
-      tbb::concurrent_hash_map<Key,
-                               detail::cache_entry<Value>,
-                               detail::collection_hasher<Key>>;
-    using accessor = typename collection_t::accessor;
+  namespace detail {
+    template <typename Key, typename Value>
+    class cache_impl {
+      using count_map_t =
+        tbb::concurrent_unordered_map<Key,
+                                      detail::entry_count_ptr,
+                                      detail::counter_hasher<Key>>;
+      using count_value_type = typename count_map_t::value_type;
+      using collection_t =
+        tbb::concurrent_hash_map<Key,
+                                 detail::cache_entry<Value>,
+                                 detail::collection_hasher<Key>>;
+      using accessor = typename collection_t::accessor;
 
   public:
-    using mapped_type = typename collection_t::mapped_type;
-    using value_type = typename collection_t::value_type;
-    using handle = cache_handle<Key, Value>;
+      using mapped_type = typename collection_t::mapped_type;
+      using value_type = typename collection_t::value_type;
+      using handle = cache_handle<Key, Value>;
 
-    // Concurrent operations
-    // ---------------------
+      // Concurrent operations
+      // ---------------------
 
-    handle at(Key const& key) const;
+      handle at(Key const& key) const;
 
-    // For key types that provide a 'supports' function, the user can
-    // supply a value of type T, which will then be used to identify
-    // and return a handle to the correct cache entry.
-    template <typename T>
-    handle entry_for(T const& t) const;
+      // For key types that provide a 'supports' function, the user can
+      // supply a value of type T, which will then be used to identify
+      // and return a handle to the correct cache entry.
+      template <typename T>
+      handle entry_for(T const& t) const;
 
-    // To optimize lookup, one can provide a handle as a hint, which
-    // will be consulted first to determine if the hint can satisfy
-    // the lookup for the provided type T.  If not, then the function
-    // falls back to the entry_for function above.
-    //
-    // Calling this function can be more efficient than calling
-    // at(key) for a handle that already points to the correct entry.
-    template <typename T>
-    handle entry_for(handle hint, T const& t) const;
+      // To optimize lookup, one can provide a handle as a hint, which
+      // will be consulted first to determine if the hint can satisfy
+      // the lookup for the provided type T.  If not, then the function
+      // falls back to the entry_for function above.
+      //
+      // Calling this function can be more efficient than calling
+      // at(key) for a handle that already points to the correct entry.
+      template <typename T>
+      handle entry_for(handle hint, T const& t) const;
 
-    template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
-      Key const& k,
-      T&& value);
+      template <typename T>
+      std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
+        Key const& k,
+        T&& value);
 
-    // Memory mitigations that remove unused cache entries
-    void drop_unused();
-    void drop_unused_but_last(std::size_t const keep_last);
+      // Memory mitigations that remove unused cache entries
+      void drop_unused();
+      void drop_unused_but_last(std::size_t const keep_last);
 
-    // Thread-safe, but no synchronization
-    // -----------------------------------
-    size_t
-    size() const
-    {
-      return std::size(entries_);
-    }
-    bool
-    empty() const
-    {
-      return std::empty(entries_);
-    }
-    size_t
-    capacity() const
-    {
-      return std::size(counts_);
-    }
+      // Thread-safe, but no synchronization
+      // -----------------------------------
+      size_t
+      size() const
+        {
+          return std::size(entries_);
+        }
+      bool
+      empty() const
+        {
+          return std::empty(entries_);
+        }
+      size_t
+      capacity() const
+        {
+          return std::size(counts_);
+        }
 
-    // Thread-unsafe
-    // -------------
-    // Can be called only when serialized access to the cache is
-    // guaranteed.
-    void shrink_to_fit();
+      // Thread-unsafe
+      // -------------
+      // Can be called only when serialized access to the cache is
+      // guaranteed.
+      void shrink_to_fit();
 
   private:
-    std::vector<std::pair<std::size_t, Key>>
-    unused_entries_()
-    {
-      std::vector<std::pair<std::size_t, Key>> result;
-      for (auto const& [key, count] : counts_) {
-        if (count->use_count == 0u) {
-          result.emplace_back(count->sequence_number, key);
+      std::vector<std::pair<std::size_t, Key>>
+      unused_entries_()
+        {
+          std::vector<std::pair<std::size_t, Key>> result;
+          for (auto const& [key, count] : counts_) {
+            if (count->use_count == 0u) {
+              result.emplace_back(count->sequence_number, key);
+            }
+          }
+          return result;
         }
+
+      std::atomic<std::size_t> next_sequence_number_{0ull};
+      collection_t entries_;
+      count_map_t counts_;
+    };
+
+
+    template <typename Key, typename Value>
+    template <typename T>
+    std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
+    cache_impl<Key, Value>::emplace(Key const& key, T&& value)
+    {
+      // Lock held on key's map entry until the function returns.
+      accessor access_token;
+      if (not entries_.insert(access_token, key)) {
+        // Entry already exists; return cached entry.
+        return handle{&access_token->first, &access_token->second};
       }
-      return result;
-    }
 
-    std::atomic<std::size_t> next_sequence_number_{0ull};
-    collection_t entries_;
-    count_map_t counts_;
-  };
+      auto const sequence_number = next_sequence_number_.fetch_add(1);
+      auto counter = detail::make_counter(sequence_number);
+      access_token->second = mapped_type{std::forward<T>(value), counter};
 
-  template <typename Key, typename Value>
-  template <typename T>
-  std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
-  cache<Key, Value>::emplace(Key const& key, T&& value)
-  {
-    // Lock held on key's map entry until the function returns.
-    accessor access_token;
-    if (not entries_.insert(access_token, key)) {
-      // Entry already exists; return cached entry.
+      auto [it, inserted] = counts_.insert(count_value_type{key, counter});
+      if (not inserted) {
+        it->second = counter;
+      }
       return handle{&access_token->first, &access_token->second};
     }
 
-    auto const sequence_number = next_sequence_number_.fetch_add(1);
-    auto counter = detail::make_counter(sequence_number);
-    access_token->second = mapped_type{std::forward<T>(value), counter};
-
-    auto [it, inserted] = counts_.insert(count_value_type{key, counter});
-    if (not inserted) {
-      it->second = counter;
-    }
-    return handle{&access_token->first, &access_token->second};
-  }
-
-  template <typename Key, typename Value>
-  cache_handle<Key, Value>
-  cache<Key, Value>::at(Key const& key) const
-  {
-    if (accessor access_token; entries_.find(access_token, key))
-      return handle{&access_token->first, &access_token->second};
-    return handle::invalid();
-  }
-
-  template <typename Key, typename Value>
-  template <typename T>
-  cache_handle<Key, Value>
-  cache<Key, Value>::entry_for(T const& t) const
-  {
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
-    std::vector<Key> matching_keys;
-    for (auto const& [key, count] : counts_) {
-      if (key.supports(t)) {
-        matching_keys.push_back(key);
-      }
-    }
-
-    if (std::empty(matching_keys)) {
+    template <typename Key, typename Value>
+    cache_handle<Key, Value>
+    cache_impl<Key, Value>::at(Key const& key) const
+    {
+      if (accessor access_token; entries_.find(access_token, key))
+        return handle{&access_token->first, &access_token->second};
       return handle::invalid();
     }
 
-    if (std::size(matching_keys) > 1) {
-      throw cet::exception("Data retrieval error.")
-        << "More than one key match.";
-    }
-    return at(matching_keys[0]);
-  }
-
-  template <typename Key, typename Value>
-  template <typename T>
-  cache_handle<Key, Value>
-  cache<Key, Value>::entry_for(handle const hint, T const& t) const
-  {
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
-    if (hint and hint.key().supports(t)) {
-      return hint;
-    }
-
-    return entry_for(t);
-  }
-
-  template <typename Key, typename Value>
-  void
-  cache<Key, Value>::drop_unused()
-  {
-    drop_unused_but_last(0);
-  }
-
-  template <typename Key, typename Value>
-  void
-  cache<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
-  {
-    auto entries_to_drop = unused_entries_();
-    // Sort in reverse-chronological order (according to sequence number).
-    std::sort(begin(entries_to_drop),
-              end(entries_to_drop),
-              [](auto const& a, auto const& b) { return a.first > b.first; });
-
-    if (std::size(entries_to_drop) <= keep_last) {
-      return;
-    }
-
-    auto const erase_begin = cbegin(entries_to_drop) + keep_last;
-    auto const erase_end = cend(entries_to_drop);
-    for (auto it = erase_begin; it != erase_end; ++it) {
-      // We need to protect access to the element that is about to
-      // be erased (via entries_.find(...))--if we don't, then the
-      // reference count can be incremented during an insert and we
-      // end up erasing the element, creating invalid handles.
-      accessor access_token;
-      if (not entries_.find(access_token, it->second)) {
-        continue;
+    template <typename Key, typename Value>
+    template <typename T>
+    cache_handle<Key, Value>
+    cache_impl<Key, Value>::entry_for(T const& t) const
+    {
+      static_assert(detail::valid_supports_expression_v<Key, T>,
+                    "The Key type does not provide a const-qualified 'supports' "
+                    "function that takes an argument of the provided type.");
+      std::vector<Key> matching_keys;
+      for (auto const& [key, count] : counts_) {
+        if (key.supports(t)) {
+          matching_keys.push_back(key);
+        }
       }
 
-      // It's possible the reference count to the element was
-      // increased between the unused_entries_() call and the
-      // entries_.find(...) call made directly above.  We therefore
-      // check that the reference count is actually zero before
-      // erasing the element.
-      if (access_token->second.reference_count() != 0u) {
-        continue;
+      if (std::empty(matching_keys)) {
+        return handle::invalid();
       }
 
-      entries_.erase(access_token);
+      if (std::size(matching_keys) > 1) {
+        throw cet::exception("Data retrieval error.")
+          << "More than one key match.";
+      }
+      return at(matching_keys[0]);
+    }
+
+    template <typename Key, typename Value>
+    template <typename T>
+    cache_handle<Key, Value>
+    cache_impl<Key, Value>::entry_for(handle const hint, T const& t) const
+    {
+      static_assert(detail::valid_supports_expression_v<Key, T>,
+                    "The Key type does not provide a const-qualified 'supports' "
+                    "function that takes an argument of the provided type.");
+      if (hint and hint.key().supports(t)) {
+        return hint;
+      }
+
+      return entry_for(t);
+    }
+
+    template <typename Key, typename Value>
+    void
+    cache_impl<Key, Value>::drop_unused()
+    {
+      drop_unused_but_last(0);
+    }
+
+    template <typename Key, typename Value>
+    void
+    cache_impl<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
+    {
+      auto entries_to_drop = unused_entries_();
+      // Sort in reverse-chronological order (according to sequence number).
+      std::sort(begin(entries_to_drop),
+                end(entries_to_drop),
+                [](auto const& a, auto const& b) { return a.first > b.first; });
+
+      if (std::size(entries_to_drop) <= keep_last) {
+        return;
+      }
+
+      auto const erase_begin = cbegin(entries_to_drop) + keep_last;
+      auto const erase_end = cend(entries_to_drop);
+      for (auto it = erase_begin; it != erase_end; ++it) {
+        // We need to protect access to the element that is about to
+        // be erased (via entries_.find(...))--if we don't, then the
+        // reference count can be incremented during an insert and we
+        // end up erasing the element, creating invalid handles.
+        accessor access_token;
+        if (not entries_.find(access_token, it->second)) {
+          continue;
+        }
+
+        // It's possible the reference count to the element was
+        // increased between the unused_entries_() call and the
+        // entries_.find(...) call made directly above.  We therefore
+        // check that the reference count is actually zero before
+        // erasing the element.
+        if (access_token->second.reference_count() != 0u) {
+          continue;
+        }
+
+        entries_.erase(access_token);
+      }
+    }
+
+    template <typename Key, typename Value>
+    void
+    cache_impl<Key, Value>::shrink_to_fit()
+    {
+      HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD();
+      drop_unused();
+      std::vector<count_value_type> used_keys;
+      std::transform(begin(entries_),
+                     end(entries_),
+                     back_inserter(used_keys),
+                     [](auto const& pr) {
+                       return count_value_type{pr.first, pr.second.count_};
+                     });
+      counts_ = count_map_t(begin(used_keys), end(used_keys));
     }
   }
-
-  template <typename Key, typename Value>
-  void
-  cache<Key, Value>::shrink_to_fit()
-  {
-    HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD();
-    drop_unused();
-    std::vector<count_value_type> used_keys;
-    std::transform(begin(entries_),
-                   end(entries_),
-                   back_inserter(used_keys),
-                   [](auto const& pr) {
-                     return count_value_type{pr.first, pr.second.count_};
-                   });
-    counts_ = count_map_t(begin(used_keys), end(used_keys));
-  }
-
 }
 
 #endif /* hep_concurrency_cache_h */
