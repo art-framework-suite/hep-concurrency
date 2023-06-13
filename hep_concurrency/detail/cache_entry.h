@@ -87,7 +87,7 @@ namespace hep::concurrency::detail {
     #else
     template <typename Key, typename Value>
     #endif
-    friend class ::hep::concurrency::detail::cache_impl;
+    friend class ::hep::concurrency::cache;
 
   private:
     std::unique_ptr<T> value_{nullptr};
