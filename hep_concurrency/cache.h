@@ -134,9 +134,9 @@ namespace hep::concurrency {
   namespace detail {
 
     #if CET_CONCEPTS_AVAILABLE
-    template <typename Key, typename Value, typename T>
+    template <typename Key, typename T>
     concept key_with_support_function = requires (Key const key, T const& t) {
-      { key.supports(t) } -> std::convertible_to<cache_handle<Key, Value>>;
+      { key.supports(t) } -> std::convertible_to<bool>;
     };
 
     template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
@@ -169,6 +169,9 @@ namespace hep::concurrency {
       // supply a value of type T, which will then be used to identify
       // and return a handle to the correct cache entry.
       template <typename T>
+      #if CET_CONCEPTS_AVAILABLE
+      requires key_with_support_function<Key, T>
+      #endif
       handle entry_for(T const& t) const;
 
       // To optimize lookup, one can provide a handle as a hint, which
@@ -179,6 +182,9 @@ namespace hep::concurrency {
       // Calling this function can be more efficient than calling
       // at(key) for a handle that already points to the correct entry.
       template <typename T>
+      #if CET_CONCEPTS_AVAILABLE
+      requires key_with_support_function<Key, T>
+      #endif
       handle entry_for(handle hint, T const& t) const;
 
       template <typename T>
@@ -279,12 +285,17 @@ namespace hep::concurrency {
     template <typename Key, typename Value>
     #endif
     template <typename T>
+    #if CET_CONCEPTS_AVAILABLE
+    requires key_with_support_function<Key, T>
+    #endif
     cache_handle<Key, Value>
     cache_impl<Key, Value>::entry_for(T const& t) const
     {
+      #if !CET_CONCEPTS_AVAILABLE
       static_assert(detail::valid_supports_expression_v<Key, T>,
                     "The Key type does not provide a const-qualified 'supports' "
                     "function that takes an argument of the provided type.");
+      #endif
       std::vector<Key> matching_keys;
       for (auto const& [key, count] : counts_) {
         if (key.supports(t)) {
@@ -309,12 +320,17 @@ namespace hep::concurrency {
     template <typename Key, typename Value>
     #endif
     template <typename T>
+    #if CET_CONCEPTS_AVAILABLE
+    requires key_with_support_function<Key, T>
+    #endif
     cache_handle<Key, Value>
     cache_impl<Key, Value>::entry_for(handle const hint, T const& t) const
     {
+      #if !CET_CONCEPTS_AVAILABLE
       static_assert(detail::valid_supports_expression_v<Key, T>,
                     "The Key type does not provide a const-qualified 'supports' "
                     "function that takes an argument of the provided type.");
+      #endif
       if (hint and hint.key().supports(t)) {
         return hint;
       }
