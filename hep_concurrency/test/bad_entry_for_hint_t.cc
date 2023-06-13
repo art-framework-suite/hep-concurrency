@@ -20,5 +20,4 @@ int main(){
   cache<test_key, int> cache;
   cache.emplace(test_key{1}, 0);
   cache.entry_for(cache_handle<test_key, int>::invalid(), 2);
-
 }
