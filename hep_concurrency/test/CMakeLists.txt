@@ -60,4 +60,5 @@ foreach (target IN ITEMS bad_cache_no_eq_t bad_cache_hash_t
 endforeach()
 
 
-cet_test(bad_atomic_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
+cet_test(bad_sanitize_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
+cet_test(bad_sanitize_ptr_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
