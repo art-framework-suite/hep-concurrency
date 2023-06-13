@@ -58,3 +58,6 @@ foreach (target IN ITEMS bad_cache_no_eq_t bad_cache_hash_t
     LIBRARIES PRIVATE hep_concurrency::cache
     TEST_PROPERTIES WILL_FAIL TRUE)
 endforeach()
+
+
+cet_test(bad_atomic_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)

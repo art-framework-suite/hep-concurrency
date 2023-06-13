@@ -10,12 +10,30 @@
 // ======================================================================
 
 #include "hep_concurrency/tsan.h"
+#include "cetlib_except/cxx20_macros.h"
+#if CET_CONCEPTS_AVAILABLE
+#include <concepts>
+#endif
+
 
 #include <atomic>
 
+namespace detail {
+  template<typename T>
+  concept atomic_compatible = 
+    std::is_copy_constructible_v<T> &&
+    std::is_move_constructible_v<T> &&
+    std::is_copy_assignable_v<T> &&
+    std::is_move_assignable_v<T>;
+}
+
 namespace hep {
   namespace concurrency {
+    #if CET_CONCEPTS_AVAILABLE
+    template<detail::atomic_compatible T>
+    #else
     template <typename T>
+    #endif
     class thread_sanitize {
     public:
       template <typename... Args>
