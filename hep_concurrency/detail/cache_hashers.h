@@ -30,7 +30,11 @@
 
 namespace hep::concurrency::detail {
 
+  #if CET_CONCEPTS_AVAILABLE
+  template <std::equality_comparable Key>
+  #else
   template <typename Key>
+  #endif
   struct collection_hasher_base {
     static bool equal (Key const& a, Key const& b)
       {
@@ -43,6 +47,7 @@ namespace hep::concurrency::detail {
   concept has_std_hash_spec = requires (Key key) {
     { std::hash<Key>{}(key) } -> std::convertible_to<std::size_t>;
   };
+
   template <typename Key>
   concept has_hash_function = requires (Key key) {
     { key.hash() } -> std::convertible_to<std::size_t>;

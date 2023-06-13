@@ -52,4 +52,8 @@ target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)
 cet_test(bad_conversion_task_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
 cet_test(chain_bad_conversion_task_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
 cet_test(bad_waiting_task COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
-cet_test(bad_cache_t COMPILE_ONLY TEST_PROPERTIES)
+foreach (target IN ITEMS bad_cache_no_eq_t bad_cache_hash_t)
+  cet_test(${target} COMPILE_ONLY
+    LIBRARIES PRIVATE TBB::tbb
+    TEST_PROPERTIES WILL_FAIL TRUE)
+endforeach()

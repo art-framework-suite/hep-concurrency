@@ -134,6 +134,11 @@ namespace hep::concurrency {
   namespace detail {
 
     #if CET_CONCEPTS_AVAILABLE
+    template <typename Key, typename Value, typename T>
+    concept key_with_support_function = requires (Key const key, T const& t) {
+      { key.supports(t) } -> std::convertible_to<cache_handle<Key, Value>>;
+    };
+
     template <::hep::concurrency::detail::hashable_cache_key Key, typename Value>
     #else
     template <typename Key, typename Value>
