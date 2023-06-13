@@ -4,7 +4,7 @@
 
 namespace {
   struct not_hashable {
-    bool operator==(not_hashable& other) { return data == other.data; }
+    bool operator==(not_hashable const& other) const { return data == other.data; }
     int data { 3 };
   };
 }
