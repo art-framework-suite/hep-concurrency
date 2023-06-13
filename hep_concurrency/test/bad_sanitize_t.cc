@@ -4,7 +4,9 @@
 using namespace hep::concurrency;
 
 struct func {
-  int operator()(int num) {
+  int
+  operator()(int num)
+  {
     return num;
   }
 };

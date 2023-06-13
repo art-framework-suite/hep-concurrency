@@ -20,9 +20,9 @@
 #if CET_CONCEPTS_AVAILABLE
 namespace detail {
   template <typename Func, typename... Args>
-  concept sanitizer_compatible = requires(Func func, Args&&... args){
-    requires std::invocable<Func, Args...>;
-  };
+  concept sanitizer_compatible = requires(Func func, Args&&... args) {
+                                   requires std::invocable<Func, Args...>;
+                                 };
 }
 #endif
 
@@ -32,9 +32,9 @@ namespace hep {
     class thread_sanitize {
     public:
       template <typename... Args>
-      #if CET_CONCEPTS_AVAILABLE
-      requires detail::sanitizer_compatible<T, Args...>
-      #endif
+#if CET_CONCEPTS_AVAILABLE
+        requires detail::sanitizer_compatible<T, Args...>
+#endif
       thread_sanitize(Args&&... args)
       {
         obj_ = new T(std::forward<Args>(args)...);
@@ -67,13 +67,13 @@ namespace hep {
       std::atomic<T*> obj_;
     };
 
-template <typename T>
+    template <typename T>
     class thread_sanitize_unique_ptr {
     public:
       template <typename... Args>
-      #if CET_CONCEPTS_AVAILABLE
-      requires detail::sanitizer_compatible<T, Args...>
-      #endif
+#if CET_CONCEPTS_AVAILABLE
+        requires detail::sanitizer_compatible<T, Args...>
+#endif
       thread_sanitize_unique_ptr(T* const t)
       {
         obj_ = t;
