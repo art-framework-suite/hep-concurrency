@@ -2,11 +2,11 @@
 #define hep_concurrency_WaitingTask_h
 // vim: set sw=2 expandtab :
 
+#include "cetlib_except/cxx20_macros.h"
 #include <atomic>
 #include <exception>
 #include <functional>
 #include <memory>
-#include "cetlib_except/cxx20_macros.h"
 #if CET_CONCEPTS_AVAILABLE
 #include <concepts>
 #endif
@@ -15,14 +15,16 @@ namespace hep::concurrency {
 
   using task_func_t = std::function<void(std::exception_ptr)>;
 
-  #if CET_CONCEPTS_AVAILABLE
-  namespace detail{
-    template <typename T, typename ... Args>
+#if CET_CONCEPTS_AVAILABLE
+  namespace detail {
+    template <typename T, typename... Args>
     concept waiting_task_compatible = requires(Args&&... args) {
-      { T{std::forward<Args>(args)...} } -> std::convertible_to<task_func_t>;
-    };
+                                        {
+                                          T{std::forward<Args>(args)...}
+                                          } -> std::convertible_to<task_func_t>;
+                                      };
   }
-  #endif
+#endif
 
   class WaitingTask {
   public:
@@ -73,11 +75,11 @@ namespace hep::concurrency {
   };
 
   using WaitingTaskPtr = std::shared_ptr<WaitingTask>;
-  
+
   template <typename T, typename... Args>
-  #if CET_CONCEPTS_AVAILABLE
+#if CET_CONCEPTS_AVAILABLE
     requires detail::waiting_task_compatible<T, Args...>
-  #endif
+#endif
   WaitingTaskPtr
   make_waiting_task(Args&&... args)
   {

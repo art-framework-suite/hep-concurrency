@@ -19,9 +19,9 @@
 
 // =================================================================
 
+#include "cetlib_except/cxx20_macros.h"
 #include <type_traits>
 #include <utility>
-#include "cetlib_except/cxx20_macros.h"
 #if CET_CONCEPTS_AVAILABLE
 #include <concepts>
 #endif
@@ -30,48 +30,52 @@
 
 namespace hep::concurrency::detail {
 
-  #if CET_CONCEPTS_AVAILABLE
+#if CET_CONCEPTS_AVAILABLE
   template <std::equality_comparable Key>
-  #else
+#else
   template <typename Key>
-  #endif
+#endif
   struct collection_hasher_base {
-    static bool equal (Key const& a, Key const& b)
-      {
-        return a == b;
-      }
+    static bool
+    equal(Key const& a, Key const& b)
+    {
+      return a == b;
+    }
   };
 
-  #if CET_CONCEPTS_AVAILABLE
+#if CET_CONCEPTS_AVAILABLE
   template <typename Key>
-  concept has_std_hash_spec = requires (Key key) {
-    { std::hash<Key>{}(key) } -> std::convertible_to<std::size_t>;
-  };
+  concept has_std_hash_spec = requires(Key key) {
+                                {
+                                  std::hash<Key>{}(key)
+                                  } -> std::convertible_to<std::size_t>;
+                              };
 
   template <typename Key>
-  concept has_hash_function = requires (Key key) {
-    { key.hash() } -> std::convertible_to<std::size_t>;
-  };
-  #endif
+  concept has_hash_function = requires(Key key) {
+                                {
+                                  key.hash()
+                                  } -> std::convertible_to<std::size_t>;
+                              };
+#endif
 
   template <typename Key>
   struct collection_hasher : collection_hasher_base<Key> {
-  #if CET_CONCEPTS_AVAILABLE
+#if CET_CONCEPTS_AVAILABLE
   };
 
   template <typename Key>
-  concept hashable_cache_key =
-    has_std_hash_spec<Key> || has_hash_function<Key>;
+  concept hashable_cache_key = has_std_hash_spec<Key> || has_hash_function<Key>;
 
   // Satisfies tbb::concurrent_hash_map
   template <has_std_hash_spec Key>
-  struct collection_hasher<Key> : collection_hasher_base<Key>{
+  struct collection_hasher<Key> : collection_hasher_base<Key> {
     using collection_hasher_base<Key>::equal;
-  #endif
+#endif
     static size_t
     hash(Key const& key)
     {
-  #if ! CET_CONCEPTS_AVAILABLE
+#if !CET_CONCEPTS_AVAILABLE
       // std::hash specializations are...special--although a given
       // specialization may exist, it may be "disabled".  A disabled
       // specialization will not be default-constructible (among other
@@ -79,12 +83,12 @@ namespace hep::concurrency::detail {
       // specialization is sufficient to model the hash concept, even
       // though the full concept is more constrained.
       if constexpr (std::is_default_constructible_v<std::hash<Key>>) {
-  #endif
+#endif
         std::hash<Key> hasher;
         return hasher(key);
-  #if ! CET_CONCEPTS_AVAILABLE
+#if !CET_CONCEPTS_AVAILABLE
       }
-  #else
+#else
     }
   };
 
@@ -94,14 +98,14 @@ namespace hep::concurrency::detail {
     static size_t
     hash(Key const& key)
     {
-  #endif
-  #if ! CET_CONCEPTS_AVAILABLE
+#endif
+#if !CET_CONCEPTS_AVAILABLE
       else {
-  #endif
+#endif
         return key.hash();
-  #if ! CET_CONCEPTS_AVAILABLE
+#if !CET_CONCEPTS_AVAILABLE
       }
-  #endif
+#endif
     }
   };
 

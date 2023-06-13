@@ -1,11 +1,13 @@
 #include "hep_concurrency/WaitingTask.h"
 
-//generates a random number
-unsigned foo(unsigned bar){
+// generates a random number
+unsigned
+foo(unsigned bar)
+{
   bar = 0xACE1u;
   unsigned bit;
-  bit  = ((bar >> 0) ^ (bar >> 2) ^ (bar >> 3) ^ (bar >> 5)) & 1;
-  return bar =  (bar >> 1) | (bit << 15);
+  bit = ((bar >> 0) ^ (bar >> 2) ^ (bar >> 3) ^ (bar >> 5)) & 1;
+  return bar = (bar >> 1) | (bit << 15);
 }
 
 namespace {
@@ -30,6 +32,8 @@ namespace {
   };
 }
 
-int main(){
+int
+main()
+{
   hep::concurrency::make_waiting_task<TestTask>(foo(1), foo(2));
 }

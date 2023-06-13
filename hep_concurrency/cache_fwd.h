@@ -5,11 +5,11 @@
 
 namespace hep::concurrency {
 
-  #if CET_CONCEPTS_AVAILABLE
+#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-  #else
+#else
   template <typename Key, typename Value>
-  #endif
+#endif
   class cache;
 }
 

@@ -4,22 +4,22 @@
 
 #include "tbb/task_group.h"
 
+#include "cetlib_except/cxx20_macros.h"
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
-#include "cetlib_except/cxx20_macros.h"
 #if CET_CONCEPTS_AVAILABLE
 #include <concepts>
 #endif
 
 namespace hep::concurrency {
-  
+
   using task_t = std::function<void()>;
 
 #if CET_CONCEPTS_AVAILABLE
   namespace detail {
-    template<typename F>
+    template <typename F>
     concept convertible_to_task_t = std::is_convertible_v<F, task_t>;
   }
 #endif
@@ -88,7 +88,8 @@ namespace hep::concurrency {
 #else
   template <typename F>
 #endif
-  void SerialTaskQueue::push(F&& func)
+  void
+  SerialTaskQueue::push(F&& func)
   {
     std::lock_guard sentry{mutex_};
     taskQueue_.push(std::make_shared<QueuedTask>(this, std::forward<F>(func)));

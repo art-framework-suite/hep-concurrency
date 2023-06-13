@@ -4,16 +4,18 @@
 
 namespace {
   class no_eq {
-    private:
-      int data;
+  private:
+    int data;
   };
 }
 
-int main() {
+int
+main()
+{
   hep::concurrency::cache<no_eq, int> cache;
-  #if ! CET_CONCEPTS_ENABLED
+#if !CET_CONCEPTS_ENABLED
   // Without concepts, need to call a disabled function.
   cache.emplace(no_eq{}, 0);
-  #endif
+#endif
   return 0;
 }

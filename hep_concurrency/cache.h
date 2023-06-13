@@ -134,9 +134,11 @@ namespace hep::concurrency {
 #if CET_CONCEPTS_AVAILABLE
   namespace detail {
     template <typename Key, typename T>
-    concept key_with_support_function = requires (Key const key, T const& t) {
-      { key.supports(t) } -> std::convertible_to<bool>;
-    };
+    concept key_with_support_function = requires(Key const key, T const& t) {
+                                          {
+                                            key.supports(t)
+                                            } -> std::convertible_to<bool>;
+                                        };
   }
 #endif
 
@@ -156,8 +158,8 @@ namespace hep::concurrency {
                                detail::cache_entry<Value>,
                                detail::collection_hasher<Key>>;
     using accessor = typename collection_t::accessor;
-  
-public:
+
+  public:
     using mapped_type = typename collection_t::mapped_type;
     using value_type = typename collection_t::value_type;
     using handle = cache_handle<Key, Value>;
@@ -172,7 +174,7 @@ public:
     // and return a handle to the correct cache entry.
     template <typename T>
 #if CET_CONCEPTS_AVAILABLE
-    requires detail::key_with_support_function<Key, T>
+      requires detail::key_with_support_function<Key, T>
 #endif
     handle entry_for(T const& t) const;
 
@@ -185,7 +187,7 @@ public:
     // at(key) for a handle that already points to the correct entry.
     template <typename T>
 #if CET_CONCEPTS_AVAILABLE
-    requires detail::key_with_support_function<Key, T>
+      requires detail::key_with_support_function<Key, T>
 #endif
     handle entry_for(handle hint, T const& t) const;
 
@@ -202,19 +204,19 @@ public:
     // -----------------------------------
     size_t
     size() const
-      {
-        return std::size(entries_);
-      }
+    {
+      return std::size(entries_);
+    }
     bool
     empty() const
-      {
-        return std::empty(entries_);
-      }
+    {
+      return std::empty(entries_);
+    }
     size_t
     capacity() const
-      {
-        return std::size(counts_);
-      }
+    {
+      return std::size(counts_);
+    }
 
     // Thread-unsafe
     // -------------
@@ -222,24 +224,23 @@ public:
     // guaranteed.
     void shrink_to_fit();
 
-private:
+  private:
     std::vector<std::pair<std::size_t, Key>>
     unused_entries_()
-      {
-        std::vector<std::pair<std::size_t, Key>> result;
-        for (auto const& [key, count] : counts_) {
-          if (count->use_count == 0u) {
-            result.emplace_back(count->sequence_number, key);
-          }
+    {
+      std::vector<std::pair<std::size_t, Key>> result;
+      for (auto const& [key, count] : counts_) {
+        if (count->use_count == 0u) {
+          result.emplace_back(count->sequence_number, key);
         }
-        return result;
       }
+      return result;
+    }
 
     std::atomic<std::size_t> next_sequence_number_{0ull};
     collection_t entries_;
     count_map_t counts_;
   };
-
 
 #if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
@@ -288,7 +289,7 @@ private:
 #endif
   template <typename T>
 #if CET_CONCEPTS_AVAILABLE
-  requires detail::key_with_support_function<Key, T>
+    requires detail::key_with_support_function<Key, T>
 #endif
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(T const& t) const
@@ -323,7 +324,7 @@ private:
 #endif
   template <typename T>
 #if CET_CONCEPTS_AVAILABLE
-  requires detail::key_with_support_function<Key, T>
+    requires detail::key_with_support_function<Key, T>
 #endif
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(handle const hint, T const& t) const
