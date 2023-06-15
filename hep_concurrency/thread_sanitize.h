@@ -17,17 +17,17 @@
 
 #include <atomic>
 
-#if CET_CONCEPTS_AVAILABLE
-namespace detail {
-  template <typename Func, typename... Args>
-  concept sanitizer_compatible = requires(Func func, Args&&... args) {
-                                   requires std::invocable<Func, Args...>;
-                                 };
-}
-#endif
-
 namespace hep {
   namespace concurrency {
+#if CET_CONCEPTS_AVAILABLE
+    namespace detail {
+      template <typename Func, typename... Args>
+      concept sanitizer_compatible = requires(Func func, Args&&... args) {
+                                       requires std::invocable<Func, Args...>;
+                                     };
+    }
+#endif
+
     template <typename T>
     class thread_sanitize {
     public:
