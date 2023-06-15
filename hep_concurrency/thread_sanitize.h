@@ -21,10 +21,8 @@ namespace hep {
   namespace concurrency {
 #if CET_CONCEPTS_AVAILABLE
     namespace detail {
-      template <typename Func, typename... Args>
-      concept sanitizer_compatible = requires(Func func, Args&&... args) {
-                                       requires std::invocable<Func, Args...>;
-                                     };
+      template <typename T, typename... Args>
+      concept sanitizer_compatible = std::constructible_from<T, Args...>;
     }
 #endif
 

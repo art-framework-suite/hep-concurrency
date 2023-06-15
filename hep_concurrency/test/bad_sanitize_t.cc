@@ -3,16 +3,12 @@
 
 using namespace hep::concurrency;
 
-struct func {
-  int
-  operator()(int num)
-  {
-    return num;
-  }
+struct Obj {
+  explicit Obj(int) {}
 };
 
 int
 main()
 {
-  thread_sanitize<func> test_sanitize("invalid argument");
+  thread_sanitize<Obj> test_sanitize("invalid argument");
 }
