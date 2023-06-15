@@ -61,4 +61,3 @@ endforeach()
 
 
 cet_test(bad_sanitize_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
-cet_test(bad_sanitize_ptr_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)

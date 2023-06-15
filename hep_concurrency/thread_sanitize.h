@@ -71,9 +71,6 @@ namespace hep {
     class thread_sanitize_unique_ptr {
     public:
       template <typename... Args>
-#if CET_CONCEPTS_AVAILABLE
-        requires detail::sanitizer_compatible<T, Args...>
-#endif
       thread_sanitize_unique_ptr(T* const t)
       {
         obj_ = t;
