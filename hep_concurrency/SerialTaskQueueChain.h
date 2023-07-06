@@ -27,36 +27,21 @@ namespace hep::concurrency {
     SerialTaskQueueChain& operator=(SerialTaskQueueChain const&) = delete;
     SerialTaskQueueChain& operator=(SerialTaskQueueChain&&) = delete;
 
-#if CET_CONCEPTS_AVAILABLE
     template <detail::convertible_to_task_t F>
-#else
-    template <typename F>
-#endif
     void push(F&&);
 
   private:
-#if CET_CONCEPTS_AVAILABLE
     template <detail::convertible_to_task_t F>
-#else
-    template <typename F>
-#endif
     void passDown(unsigned int, F&&);
-#if CET_CONCEPTS_AVAILABLE
+
     template <detail::convertible_to_task_t F>
-#else
-    template <typename F>
-#endif
     void runFunc(F const&);
 
     std::recursive_mutex mutex_{};
     std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
   };
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::convertible_to_task_t F>
-#else
-  template <typename F>
-#endif
   void
   SerialTaskQueueChain::push(F&& func)
   {
@@ -71,11 +56,7 @@ namespace hep::concurrency {
     }
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::convertible_to_task_t F>
-#else
-  template <typename F>
-#endif
   void
   SerialTaskQueueChain::passDown(unsigned int idx, F&& func)
   {
@@ -91,11 +72,7 @@ namespace hep::concurrency {
     }
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::convertible_to_task_t F>
-#else
-  template <typename F>
-#endif
   void
   SerialTaskQueueChain::runFunc(F const& func)
   {
