@@ -82,12 +82,8 @@ namespace hep::concurrency::detail {
       return count_->use_count;
     }
 
-#if CET_CONCEPTS_AVAILABLE
     template <::hep::concurrency::detail::hashable_cache_key Key,
               typename Value>
-#else
-    template <typename Key, typename Value>
-#endif
     friend class ::hep::concurrency::cache;
 
   private:
