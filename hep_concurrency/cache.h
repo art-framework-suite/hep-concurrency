@@ -182,9 +182,8 @@ namespace hep::concurrency {
     handle entry_for(handle hint, T const& t) const;
 
     template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
-      Key const& k,
-      T&& value);
+      requires std::convertible_to<T, Value>
+    handle emplace(Key const& k, T&& value);
 
     // Memory mitigations that remove unused cache entries
     void drop_unused();
@@ -234,7 +233,8 @@ namespace hep::concurrency {
 
   template <detail::hashable_cache_key Key, typename Value>
   template <typename T>
-  std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
+  requires std::convertible_to<T, Value>
+  cache_handle<Key, Value>
   cache<Key, Value>::emplace(Key const& key, T&& value)
   {
     // Lock held on key's map entry until the function returns.
