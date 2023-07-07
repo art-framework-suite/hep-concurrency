@@ -16,7 +16,7 @@ namespace hep::concurrency {
 
   namespace detail {
     template <typename F>
-    concept convertible_to_task_t = std::is_convertible_v<F, task_t>;
+    concept convertible_to_task_t = std::convertible_to<F, task_t>;
   }
 
   class SerialTaskQueue final {
