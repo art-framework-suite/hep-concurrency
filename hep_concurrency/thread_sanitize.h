@@ -9,7 +9,6 @@
 // problem.
 // ======================================================================
 
-#include "cetlib_except/cxx20_macros.h"
 #include "hep_concurrency/tsan.h"
 #include <concepts>
 

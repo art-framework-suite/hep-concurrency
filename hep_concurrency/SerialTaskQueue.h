@@ -4,7 +4,6 @@
 
 #include "tbb/task_group.h"
 
-#include "cetlib_except/cxx20_macros.h"
 #include <concepts>
 #include <functional>
 #include <memory>

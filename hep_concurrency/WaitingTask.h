@@ -2,7 +2,6 @@
 #define hep_concurrency_WaitingTask_h
 // vim: set sw=2 expandtab :
 
-#include "cetlib_except/cxx20_macros.h"
 #include <atomic>
 #include <concepts>
 #include <exception>

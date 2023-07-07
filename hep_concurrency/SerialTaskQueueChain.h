@@ -3,11 +3,8 @@
 #define hep_concurrency_SerialTaskQueueChain_h
 // vim: set sw=2 expandtab :
 
-#include "cetlib_except/cxx20_macros.h"
 #include "hep_concurrency/SerialTaskQueue.h"
-#if CET_CONCEPTS_AVAILABLE
 #include <concepts>
-#endif
 
 #include <cassert>
 #include <memory>

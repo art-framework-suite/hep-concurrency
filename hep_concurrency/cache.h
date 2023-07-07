@@ -119,7 +119,6 @@
 #include "hep_concurrency/cache_handle.h"
 #include "hep_concurrency/detail/cache_entry.h"
 #include "hep_concurrency/detail/cache_hashers.h"
-#include "hep_concurrency/detail/cache_key_supports.h"
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/concurrent_unordered_map.h"
 
