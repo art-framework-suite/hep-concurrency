@@ -51,28 +51,23 @@ namespace hep::concurrency::detail {
                               };
 
   template <typename Key>
-  struct collection_hasher : collection_hasher_base<Key> {};
-
-  template <typename Key>
   concept hashable_cache_key = has_std_hash_spec<Key> || has_hash_function<Key>;
 
-  // Satisfies tbb::concurrent_hash_map
-  template <has_std_hash_spec Key>
-  struct collection_hasher<Key> : collection_hasher_base<Key> {
+  template <hashable_cache_key Key>
+  struct collection_hasher : collection_hasher_base<Key> {
     using collection_hasher_base<Key>::equal;
+
     static size_t
     hash(Key const& key)
+      requires has_std_hash_spec<Key>
     {
       std::hash<Key> hasher;
       return hasher(key);
     }
-  };
 
-  template <has_hash_function Key>
-  struct collection_hasher<Key> : collection_hasher_base<Key> {
-    using collection_hasher_base<Key>::equal;
     static size_t
     hash(Key const& key)
+      requires has_hash_function<Key>
     {
       return key.hash();
     }
