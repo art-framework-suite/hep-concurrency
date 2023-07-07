@@ -4,25 +4,20 @@
 
 #include "tbb/task_group.h"
 
-#include "cetlib_except/cxx20_macros.h"
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
-#if CET_CONCEPTS_AVAILABLE
-#include <concepts>
-#endif
 
 namespace hep::concurrency {
 
   using task_t = std::function<void()>;
 
-#if CET_CONCEPTS_AVAILABLE
   namespace detail {
     template <typename F>
-    concept convertible_to_task_t = std::is_convertible_v<F, task_t>;
+    concept convertible_to_task_t = std::convertible_to<F, task_t>;
   }
-#endif
 
   class SerialTaskQueue final {
   public:
@@ -32,11 +27,7 @@ namespace hep::concurrency {
     SerialTaskQueue(SerialTaskQueue const&) = delete;
     SerialTaskQueue& operator=(SerialTaskQueue const&) = delete;
 
-#if CET_CONCEPTS_AVAILABLE
     template <detail::convertible_to_task_t F>
-#else
-    template <typename F>
-#endif
     void push(F&& func);
 
     bool pause();
@@ -83,11 +74,7 @@ namespace hep::concurrency {
     task_t func_;
   };
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::convertible_to_task_t F>
-#else
-  template <typename F>
-#endif
   void
   SerialTaskQueue::push(F&& func)
   {

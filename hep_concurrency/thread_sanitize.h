@@ -9,30 +9,23 @@
 // problem.
 // ======================================================================
 
-#include "cetlib_except/cxx20_macros.h"
 #include "hep_concurrency/tsan.h"
-#if CET_CONCEPTS_AVAILABLE
 #include <concepts>
-#endif
 
 #include <atomic>
 
 namespace hep {
   namespace concurrency {
-#if CET_CONCEPTS_AVAILABLE
     namespace detail {
       template <typename T, typename... Args>
       concept sanitizer_compatible = std::constructible_from<T, Args...>;
     }
-#endif
 
     template <typename T>
     class thread_sanitize {
     public:
       template <typename... Args>
-#if CET_CONCEPTS_AVAILABLE
         requires detail::sanitizer_compatible<T, Args...>
-#endif
       thread_sanitize(Args&&... args)
       {
         obj_ = new T(std::forward<Args>(args)...);

@@ -37,7 +37,7 @@ cet_make_library(LIBRARY_NAME cache INTERFACE
     cache_handle.h
     detail/cache_entry.h
     detail/cache_hashers.h
-    detail/cache_key_supports.h
+    # detail/cache_key_supports.h
   LIBRARIES INTERFACE TBB::tbb cetlib_except::cetlib_except
 )
 

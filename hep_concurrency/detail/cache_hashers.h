@@ -19,22 +19,15 @@
 
 // =================================================================
 
-#include "cetlib_except/cxx20_macros.h"
-#include <type_traits>
-#include <utility>
-#if CET_CONCEPTS_AVAILABLE
 #include <concepts>
-#endif
 #include <cstddef>
 #include <functional>
+#include <type_traits>
+#include <utility>
 
 namespace hep::concurrency::detail {
 
-#if CET_CONCEPTS_AVAILABLE
   template <std::equality_comparable Key>
-#else
-  template <typename Key>
-#endif
   struct collection_hasher_base {
     static bool
     equal(Key const& a, Key const& b)
@@ -43,7 +36,6 @@ namespace hep::concurrency::detail {
     }
   };
 
-#if CET_CONCEPTS_AVAILABLE
   template <typename Key>
   concept has_std_hash_spec = requires(Key key) {
                                 {
@@ -57,12 +49,9 @@ namespace hep::concurrency::detail {
                                   key.hash()
                                   } -> std::convertible_to<std::size_t>;
                               };
-#endif
 
   template <typename Key>
-  struct collection_hasher : collection_hasher_base<Key> {
-#if CET_CONCEPTS_AVAILABLE
-  };
+  struct collection_hasher : collection_hasher_base<Key> {};
 
   template <typename Key>
   concept hashable_cache_key = has_std_hash_spec<Key> || has_hash_function<Key>;
@@ -71,24 +60,11 @@ namespace hep::concurrency::detail {
   template <has_std_hash_spec Key>
   struct collection_hasher<Key> : collection_hasher_base<Key> {
     using collection_hasher_base<Key>::equal;
-#endif
     static size_t
     hash(Key const& key)
     {
-#if !CET_CONCEPTS_AVAILABLE
-      // std::hash specializations are...special--although a given
-      // specialization may exist, it may be "disabled".  A disabled
-      // specialization will not be default-constructible (among other
-      // things).  Here, we assume a default-constructible
-      // specialization is sufficient to model the hash concept, even
-      // though the full concept is more constrained.
-      if constexpr (std::is_default_constructible_v<std::hash<Key>>) {
-#endif
-        std::hash<Key> hasher;
-        return hasher(key);
-#if !CET_CONCEPTS_AVAILABLE
-      }
-#else
+      std::hash<Key> hasher;
+      return hasher(key);
     }
   };
 
@@ -98,14 +74,7 @@ namespace hep::concurrency::detail {
     static size_t
     hash(Key const& key)
     {
-#endif
-#if !CET_CONCEPTS_AVAILABLE
-      else {
-#endif
-        return key.hash();
-#if !CET_CONCEPTS_AVAILABLE
-      }
-#endif
+      return key.hash();
     }
   };
 

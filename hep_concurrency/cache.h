@@ -119,19 +119,18 @@
 #include "hep_concurrency/cache_handle.h"
 #include "hep_concurrency/detail/cache_entry.h"
 #include "hep_concurrency/detail/cache_hashers.h"
-#include "hep_concurrency/detail/cache_key_supports.h"
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/concurrent_unordered_map.h"
 
 #include <algorithm>
 #include <atomic>
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
 
 namespace hep::concurrency {
 
-#if CET_CONCEPTS_AVAILABLE
   namespace detail {
     template <typename Key, typename T>
     concept key_with_support_function = requires(Key const key, T const& t) {
@@ -140,13 +139,8 @@ namespace hep::concurrency {
                                             } -> std::convertible_to<bool>;
                                         };
   }
-#endif
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   class cache {
     using count_map_t =
       tbb::concurrent_unordered_map<Key,
@@ -173,9 +167,7 @@ namespace hep::concurrency {
     // supply a value of type T, which will then be used to identify
     // and return a handle to the correct cache entry.
     template <typename T>
-#if CET_CONCEPTS_AVAILABLE
       requires detail::key_with_support_function<Key, T>
-#endif
     handle entry_for(T const& t) const;
 
     // To optimize lookup, one can provide a handle as a hint, which
@@ -186,15 +178,12 @@ namespace hep::concurrency {
     // Calling this function can be more efficient than calling
     // at(key) for a handle that already points to the correct entry.
     template <typename T>
-#if CET_CONCEPTS_AVAILABLE
       requires detail::key_with_support_function<Key, T>
-#endif
     handle entry_for(handle hint, T const& t) const;
 
     template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
-      Key const& k,
-      T&& value);
+      requires std::convertible_to<T, Value>
+    handle emplace(Key const& k, T&& value);
 
     // Memory mitigations that remove unused cache entries
     void drop_unused();
@@ -242,13 +231,10 @@ namespace hep::concurrency {
     count_map_t counts_;
   };
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   template <typename T>
-  std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
+  requires std::convertible_to<T, Value>
+  cache_handle<Key, Value>
   cache<Key, Value>::emplace(Key const& key, T&& value)
   {
     // Lock held on key's map entry until the function returns.
@@ -269,11 +255,7 @@ namespace hep::concurrency {
     return handle{&access_token->first, &access_token->second};
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   cache_handle<Key, Value>
   cache<Key, Value>::at(Key const& key) const
   {
@@ -282,23 +264,12 @@ namespace hep::concurrency {
     return handle::invalid();
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   template <typename T>
-#if CET_CONCEPTS_AVAILABLE
     requires detail::key_with_support_function<Key, T>
-#endif
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(T const& t) const
   {
-#if !CET_CONCEPTS_AVAILABLE
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
-#endif
     std::vector<Key> matching_keys;
     for (auto const& [key, count] : counts_) {
       if (key.supports(t)) {
@@ -317,23 +288,12 @@ namespace hep::concurrency {
     return at(matching_keys[0]);
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   template <typename T>
-#if CET_CONCEPTS_AVAILABLE
     requires detail::key_with_support_function<Key, T>
-#endif
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(handle const hint, T const& t) const
   {
-#if !CET_CONCEPTS_AVAILABLE
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
-#endif
     if (hint and hint.key().supports(t)) {
       return hint;
     }
@@ -341,22 +301,14 @@ namespace hep::concurrency {
     return entry_for(t);
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   void
   cache<Key, Value>::drop_unused()
   {
     drop_unused_but_last(0);
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   void
   cache<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
   {
@@ -395,11 +347,7 @@ namespace hep::concurrency {
     }
   }
 
-#if CET_CONCEPTS_AVAILABLE
   template <detail::hashable_cache_key Key, typename Value>
-#else
-  template <typename Key, typename Value>
-#endif
   void
   cache<Key, Value>::shrink_to_fit()
   {
