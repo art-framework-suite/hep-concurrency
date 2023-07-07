@@ -233,7 +233,7 @@ namespace hep::concurrency {
 
   template <detail::hashable_cache_key Key, typename Value>
   template <typename T>
-  requires std::convertible_to<T, Value>
+    requires std::convertible_to<T, Value>
   cache_handle<Key, Value>
   cache<Key, Value>::emplace(Key const& key, T&& value)
   {

@@ -59,7 +59,7 @@ namespace hep::concurrency::detail {
 
     static size_t
     hash(Key const& key)
-    requires has_std_hash_spec<Key>
+      requires has_std_hash_spec<Key>
     {
       std::hash<Key> hasher;
       return hasher(key);
@@ -67,7 +67,7 @@ namespace hep::concurrency::detail {
 
     static size_t
     hash(Key const& key)
-    requires has_hash_function<Key>
+      requires has_hash_function<Key>
     {
       return key.hash();
     }
