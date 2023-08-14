@@ -71,6 +71,9 @@ namespace hep::concurrency {
 
   using WaitingTaskPtr = std::shared_ptr<WaitingTask>;
 
+  WaitingTaskPtr make_waiting_task(task_func_t&& t);
+  WaitingTaskPtr make_waiting_task(task_func_t&& t, unsigned n_signals);
+
   template <typename T, typename... Args>
     requires detail::waiting_task_compatible<T, Args...>
   WaitingTaskPtr
