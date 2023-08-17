@@ -23,8 +23,8 @@
 #include <atomic>
 #include <cstdlib>
 #include <iostream>
-#include <string>
 #include <source_location>
+#include <string>
 
 namespace hep::concurrency::detail {
 
