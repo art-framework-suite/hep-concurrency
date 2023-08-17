@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <source_location>
 
 namespace hep::concurrency::detail {
 
@@ -69,7 +70,9 @@ namespace hep::concurrency::detail {
 #else // NDEBUG
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()                               \
   static hep::concurrency::detail::thread_counter s_tc_{                       \
-    __FILE__, __LINE__, __func__};                                             \
+    std::source_location::current().file_name(),                               \
+    std::source_location::current().line(),                                    \
+    std::source_location::current().function_name()};                          \
   hep::concurrency::detail::thread_counter::sentry sentry_tc_                  \
   {                                                                            \
     s_tc_                                                                      \
