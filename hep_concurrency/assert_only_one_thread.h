@@ -30,8 +30,11 @@ namespace hep::concurrency::detail {
 
   class thread_counter {
   public:
-    explicit thread_counter(std::source_location loc = std::source_location::current())
-      : filename_{loc.file_name()}, linenum_{loc.line()}, funcname_{loc.function_name()}
+    explicit thread_counter(
+      std::source_location loc = std::source_location::current())
+      : filename_{loc.file_name()}
+      , linenum_{loc.line()}
+      , funcname_{loc.function_name()}
     {}
 
     class sentry {
@@ -67,7 +70,7 @@ namespace hep::concurrency::detail {
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()
 #else // NDEBUG
 #define HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD()                               \
-  static hep::concurrency::detail::thread_counter s_tc_{};                          \
+  static hep::concurrency::detail::thread_counter s_tc_{};                     \
   hep::concurrency::detail::thread_counter::sentry sentry_tc_                  \
   {                                                                            \
     s_tc_                                                                      \
