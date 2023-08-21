@@ -8,6 +8,19 @@ using namespace std;
 
 namespace hep::concurrency {
 
+  WaitingTaskPtr
+  make_waiting_task(task_func_t&& t)
+  {
+    return std::make_shared<WaitingTask>(std::forward<task_func_t>(t));
+  }
+
+  WaitingTaskPtr
+  make_waiting_task(task_func_t&& t, unsigned n_signals)
+  {
+    return std::make_shared<WaitingTask>(std::forward<task_func_t>(t),
+                                         n_signals);
+  }
+
   std::exception_ptr
   WaitingTask::exceptionPtr() const
   {

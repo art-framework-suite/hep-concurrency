@@ -51,7 +51,7 @@ target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)
 
 cet_test(serial_task_queue_push_constraints_t USE_CATCH2_MAIN)
 cet_test(serial_task_queue_chain_push_constraints_t USE_CATCH2_MAIN)
-cet_test(bad_waiting_task COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
+cet_test(make_waiting_task_t USE_CATCH2_MAIN)
 foreach (target IN ITEMS bad_cache_no_eq_t bad_cache_hash_t
           bad_entry_for_t bad_entry_for_hint_t)
   cet_test(${target} COMPILE_ONLY
