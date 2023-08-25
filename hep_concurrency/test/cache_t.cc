@@ -177,3 +177,75 @@ TEST_CASE("User defined with hint")
   CHECK(cache.capacity() == size(cache));
   CHECK(size(cache) == 0ull);
 }
+
+namespace {
+  template <typename Key, typename Value>
+  concept can_cache = requires { { cache<Key, Value>{} }; };
+
+  struct not_hashable {
+    bool
+    operator==(not_hashable const& other) const
+    {
+      return data == other.data;
+    }
+    int data{3};
+  };
+
+  class no_eq {
+  private:
+    int data;
+  };
+
+}
+
+TEST_CASE("Cache constraint enforcement")
+{
+  CHECK_FALSE(can_cache<not_hashable, int>);
+  CHECK_FALSE(can_cache<no_eq, int>);
+}
+
+namespace {
+  struct test_key {
+    int num;
+
+    std::size_t
+    hash() const
+    {
+      return std::hash<int>{}(num);
+    }
+
+    bool
+    operator==(test_key const& other) const
+    {
+      return num == other.num;
+    }
+  };
+
+  template <typename Key, typename Value, typename T>
+  concept can_call_entry_for =
+  requires (cache<Key, Value> test_cache, T t)
+  { { test_cache.entry_for(t) }; };
+
+  template <typename Key, typename Value, typename T>
+  concept can_call_entry_for_hint =
+  requires (cache<Key, Value> test_cache, T t)
+  { { test_cache.entry_for(cache_handle<Key, Value>::invalid(), t) }; };
+}
+
+TEST_CASE("entry_for() constraint enforcement (bad)")
+{
+  // Prevent false passes for CHECK_FALSE() tests.
+  REQUIRE(can_cache<test_key, int>);
+  CHECK_FALSE(can_call_entry_for<test_key, int, int>);
+  CHECK_FALSE(can_call_entry_for_hint<test_key, int, int>);
+}
+
+TEST_CASE("entry_for() constraint enforcement (good)")
+{
+  // Prevent false passes for CHECK_FALSE() tests.
+  REQUIRE(can_cache<test::interval_of_validity, std::string>);
+  CHECK(can_call_entry_for<test::interval_of_validity, std::string, int>);
+  CHECK(can_call_entry_for_hint<test::interval_of_validity, std::string, int>);
+  CHECK_FALSE(can_call_entry_for<test::interval_of_validity, std::string, std::string>);
+  CHECK_FALSE(can_call_entry_for_hint<test::interval_of_validity, std::string, std::string>);
+}
