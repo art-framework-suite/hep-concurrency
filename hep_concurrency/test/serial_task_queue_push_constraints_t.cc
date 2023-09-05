@@ -3,7 +3,6 @@
 #include "hep_concurrency/SerialTaskQueue.h"
 
 #include <concepts>
-#include <fstream>
 
 namespace {
   int

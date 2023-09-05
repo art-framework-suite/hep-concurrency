@@ -37,10 +37,17 @@ cet_test(simultaneous_function_spawner_t USE_CATCH2_MAIN
   LIBRARIES PRIVATE hep_concurrency::simultaneous_function_spawner
 )
 
-########################################################################
-# Test concurrent caching facility.
-########################################################################
+# Test compile-only features.
+foreach(test IN ITEMS
+    serial_task_queue_push_constraints_t
+    serial_task_queue_chain_push_constraints_t
+    make_waiting_task_t
+    sanitizer_compatible_t
+  )
+  cet_test(${test} USE_CATCH2_MAIN)
+endforeach()
 
+# Test concurrent caching facility.
 foreach (target IN ITEMS cache_handle_t cache_mt_t cache_t)
   cet_test(${target} USE_CATCH2_MAIN
     LIBRARIES PRIVATE hep_concurrency::cache TBB::tbb)
@@ -48,16 +55,3 @@ endforeach()
 
 target_link_libraries(cache_handle_t PRIVATE cetlib_except::Catch2Matchers)
 target_link_libraries(cache_t PRIVATE cetlib_except::Catch2Matchers)
-
-cet_test(serial_task_queue_push_constraints_t USE_CATCH2_MAIN)
-cet_test(serial_task_queue_chain_push_constraints_t USE_CATCH2_MAIN)
-cet_test(make_waiting_task_t USE_CATCH2_MAIN)
-foreach (target IN ITEMS bad_cache_no_eq_t bad_cache_hash_t
-          bad_entry_for_t bad_entry_for_hint_t)
-  cet_test(${target} COMPILE_ONLY
-    LIBRARIES PRIVATE hep_concurrency::cache
-    TEST_PROPERTIES WILL_FAIL TRUE)
-endforeach()
-
-
-cet_test(bad_sanitize_t COMPILE_ONLY TEST_PROPERTIES WILL_FAIL TRUE)
