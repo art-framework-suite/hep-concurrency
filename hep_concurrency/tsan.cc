@@ -1,6 +1,6 @@
 #include "hep_concurrency/tsan.h"
 
-#include <x86intrin.h>
+// #include <x86intrin.h>
 
 namespace hep::concurrency {
   int intentionalDataRace_{0};
