@@ -44,7 +44,7 @@ foreach(test IN ITEMS
     make_waiting_task_t
     sanitizer_compatible_t
   )
-  cet_test(${test} USE_CATCH2_MAIN)
+  cet_test(${test} LIBRARIES PRIVATE hep_concurrency::hep_concurrency USE_CATCH2_MAIN)
 endforeach()
 
 # Test concurrent caching facility.
