@@ -8,7 +8,7 @@
 //
 // The cache class template, implemented below, provides a means of
 // caching data in a thread-safe manner, using TBB's
-// concurrent_(unordered|hash)_map faciliies.
+// concurrent_(unordered|hash)_map facilities.
 //
 // The user interface includes the cache and the cache_handle
 // templates.  A cache_handle object is used to provid immutable
@@ -115,23 +115,32 @@
 
 #include "cetlib_except/exception.h"
 #include "hep_concurrency/assert_only_one_thread.h"
+#include "hep_concurrency/cache_fwd.h"
 #include "hep_concurrency/cache_handle.h"
 #include "hep_concurrency/detail/cache_entry.h"
 #include "hep_concurrency/detail/cache_hashers.h"
-#include "hep_concurrency/detail/cache_key_supports.h"
-
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/concurrent_unordered_map.h"
 
 #include <algorithm>
 #include <atomic>
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <type_traits>
 
 namespace hep::concurrency {
 
-  template <typename Key, typename Value>
+  namespace detail {
+    template <typename Key, typename T>
+    concept key_with_support_function = requires(Key const key, T const& t) {
+                                          {
+                                            key.supports(t)
+                                            } -> std::convertible_to<bool>;
+                                        };
+  }
+
+  template <detail::hashable_cache_key Key, typename Value>
   class cache {
     using count_map_t =
       tbb::concurrent_unordered_map<Key,
@@ -158,6 +167,7 @@ namespace hep::concurrency {
     // supply a value of type T, which will then be used to identify
     // and return a handle to the correct cache entry.
     template <typename T>
+      requires detail::key_with_support_function<Key, T>
     handle entry_for(T const& t) const;
 
     // To optimize lookup, one can provide a handle as a hint, which
@@ -168,12 +178,12 @@ namespace hep::concurrency {
     // Calling this function can be more efficient than calling
     // at(key) for a handle that already points to the correct entry.
     template <typename T>
+      requires detail::key_with_support_function<Key, T>
     handle entry_for(handle hint, T const& t) const;
 
     template <typename T>
-    std::enable_if_t<std::is_convertible_v<T, Value>, handle> emplace(
-      Key const& k,
-      T&& value);
+      requires std::convertible_to<T, Value>
+    handle emplace(Key const& k, T&& value);
 
     // Memory mitigations that remove unused cache entries
     void drop_unused();
@@ -221,9 +231,10 @@ namespace hep::concurrency {
     count_map_t counts_;
   };
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   template <typename T>
-  std::enable_if_t<std::is_convertible_v<T, Value>, cache_handle<Key, Value>>
+    requires std::convertible_to<T, Value>
+  cache_handle<Key, Value>
   cache<Key, Value>::emplace(Key const& key, T&& value)
   {
     // Lock held on key's map entry until the function returns.
@@ -244,7 +255,7 @@ namespace hep::concurrency {
     return handle{&access_token->first, &access_token->second};
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   cache_handle<Key, Value>
   cache<Key, Value>::at(Key const& key) const
   {
@@ -253,14 +264,12 @@ namespace hep::concurrency {
     return handle::invalid();
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   template <typename T>
+    requires detail::key_with_support_function<Key, T>
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(T const& t) const
   {
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
     std::vector<Key> matching_keys;
     for (auto const& [key, count] : counts_) {
       if (key.supports(t)) {
@@ -279,14 +288,12 @@ namespace hep::concurrency {
     return at(matching_keys[0]);
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   template <typename T>
+    requires detail::key_with_support_function<Key, T>
   cache_handle<Key, Value>
   cache<Key, Value>::entry_for(handle const hint, T const& t) const
   {
-    static_assert(detail::valid_supports_expression_v<Key, T>,
-                  "The Key type does not provide a const-qualified 'supports' "
-                  "function that takes an argument of the provided type.");
     if (hint and hint.key().supports(t)) {
       return hint;
     }
@@ -294,14 +301,14 @@ namespace hep::concurrency {
     return entry_for(t);
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   void
   cache<Key, Value>::drop_unused()
   {
     drop_unused_but_last(0);
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   void
   cache<Key, Value>::drop_unused_but_last(std::size_t const keep_last)
   {
@@ -340,7 +347,7 @@ namespace hep::concurrency {
     }
   }
 
-  template <typename Key, typename Value>
+  template <detail::hashable_cache_key Key, typename Value>
   void
   cache<Key, Value>::shrink_to_fit()
   {
@@ -355,7 +362,6 @@ namespace hep::concurrency {
                    });
     counts_ = count_map_t(begin(used_keys), end(used_keys));
   }
-
 }
 
 #endif /* hep_concurrency_cache_h */

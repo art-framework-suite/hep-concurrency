@@ -8,26 +8,42 @@
 
 #if defined(__SANITIZE_THREAD__)
 #define ANNOTATE_HAPPENS_BEFORE(addr)                                          \
-  AnnotateHappensBefore(__FILE__, __LINE__, (void*)(addr))
+  AnnotateHappensBefore(std::source_location::current().file(),                \
+                        std::source_location::current().line(),                \
+                        (void*)(addr))
 #define ANNOTATE_HAPPENS_AFTER(addr)                                           \
-  AnnotateHappensAfter(__FILE__, __LINE__, (void*)(addr))
+  AnnotateHappensAfter(std::source_location::current().file(),                 \
+                       std::source_location::current().line(),                 \
+                       (void*)(addr))
 #define ANNOTATE_BENIGN_RACE_SIZED(addr, size, desc)                           \
-  AnnotateBenignRaceSized(                                                     \
-    __FILE__, __LINE__, (void*)(addr), (unsigned long)(size), (desc))
+  AnnotateBenignRaceSized(std::source_location::current().file(),              \
+                          std::source_location::current().line(),              \
+                          (void*)(addr),                                       \
+                          (unsigned long)(size),                               \
+                          (desc))
 #define ANNOTATE_BENIGN_RACE(addr, desc)                                       \
-  AnnotateBenignRace(__FILE__, __LINE__, (void*)(addr), (desc))
+  AnnotateBenignRace(std::source_location::current().file(),                   \
+                     std::source_location::current().line(),                   \
+                     (void*)(addr),                                            \
+                     (desc))
 #define ANNOTATE_THREAD_IGNORE_READS_BEGIN                                     \
-  AnnotateIgnoreReadsBegin(__FILE__, __LINE__)
+  AnnotateIgnoreReadsBegin(std::source_location::current().file(),             \
+                           std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_READS_END                                       \
-  AnnotateIgnoreReadsEnd(__FILE__, __LINE__)
+  AnnotateIgnoreReadsEnd(std::source_location::current().file(),               \
+                         std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_WRITES_BEGIN                                    \
-  AnnotateIgnoreWritesBegin(__FILE__, __LINE__)
+  AnnotateIgnoreWritesBegin(std::source_location::current().file(),            \
+                            std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_WRITES_END                                      \
-  AnnotateIgnoreWritesEnd(__FILE__, __LINE__)
+  AnnotateIgnoreWritesEnd(std::source_location::current().file(),              \
+                          std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_SYNC_BEGIN                                      \
-  AnnotateIgnoreSyncBegin(__FILE__, __LINE__)
+  AnnotateIgnoreSyncBegin(std::source_location::current().file(),              \
+                          std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_SYNC_END                                        \
-  AnnotateIgnoreSyncEnd(__FILE__, __LINE__)
+  AnnotateIgnoreSyncEnd(std::source_location::current().file(),                \
+                        std::source_location::current().line())
 #define ANNOTATE_THREAD_IGNORE_BEGIN                                           \
   ANNOTATE_THREAD_IGNORE_READS_BEGIN;                                          \
   ANNOTATE_THREAD_IGNORE_WRITES_BEGIN;                                         \
@@ -37,8 +53,10 @@
     std::ostringstream msg;                                                    \
     msg << "-----> tid: " << std::this_thread::get_id() << " "                 \
         << hep::concurrency::ignoreBalance_                                    \
-        << " ANNOTATE_THREAD_IGNORE_BEGIN: " << __FILE__ << ":" << __LINE__    \
-        << " " << __func__ << "\n";                                            \
+        << " ANNOTATE_THREAD_IGNORE_BEGIN: "                                   \
+        << std::source_location::current().file() << ":"                       \
+        << std::source_location::current().line() << " "                       \
+        << std::source_location::current().function_name() << "\n";            \
     std::cerr << msg.str();                                                    \
   }
 #define ANNOTATE_THREAD_IGNORE_END                                             \
@@ -50,8 +68,10 @@
     std::ostringstream msg;                                                    \
     msg << "-----> tid: " << std::this_thread::get_id() << " "                 \
         << hep::concurrency::ignoreBalance_                                    \
-        << " ANNOTATE_THREAD_IGNORE_END:   " << __FILE__ << ":" << __LINE__    \
-        << " " << __func__ << "\n";                                            \
+        << " ANNOTATE_THREAD_IGNORE_END:   "                                   \
+        << std::source_location::current().file() << ":"                       \
+        << std::source_location::current().line() << " "                       \
+        << std::source_location::current().function_name() << "\n";            \
     std::cerr << msg.str();                                                    \
   }
 extern "C" {
@@ -97,8 +117,9 @@ namespace hep::concurrency {
         std::ostringstream buf;                                                \
         buf << "-----> Making data race " #ENV_VAR " "                         \
             << "tid: " << std::this_thread::get_id() << " "                    \
-            << hep::concurrency::ignoreBalance_ << " " << __FILE__ << ":"      \
-            << __LINE__ << "\n";                                               \
+            << hep::concurrency::ignoreBalance_ << " "                         \
+            << std::source_location::current().file() << ":"                   \
+            << std::source_location::current().line() << "\n";                 \
         std::cerr << buf.str();                                                \
       }                                                                        \
       hep::concurrency::intentionalDataRace_ =                                 \

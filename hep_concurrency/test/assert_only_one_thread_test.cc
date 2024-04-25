@@ -31,7 +31,7 @@ main()
     // Insert "by-hand" what the
     // HEP_CONCURRENCY_ASSERT_ONLY_ONE_THREAD would expand to so that
     // we can avoid an std::abort() for testing.
-    static detail::thread_counter s{__FILE__, __LINE__, __func__};
+    static detail::thread_counter s{};
     detail::thread_counter::sentry hold{s, false};
     std::this_thread::sleep_for(100ms);
   };

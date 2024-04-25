@@ -19,34 +19,57 @@
 
 // =================================================================
 
+#include <concepts>
+#include <cstddef>
+#include <functional>
 #include <type_traits>
 #include <utility>
 
 namespace hep::concurrency::detail {
 
-  // Satisfies tbb::concurrent_hash_map
-  template <typename Key>
-  struct collection_hasher {
-    static size_t
-    hash(Key const& key)
-    {
-      // std::hash specializations are...special--although a given
-      // specialization may exist, it may be "disabled".  A disabled
-      // specialization will not be default-constructible (among other
-      // things).  Here, we assume a default-constructible
-      // specialization is sufficient to model the hash concept, even
-      // though the full concept is more constrained.
-      if constexpr (std::is_default_constructible_v<std::hash<Key>>) {
-        std::hash<Key> hasher;
-        return hasher(key);
-      } else {
-        return key.hash();
-      }
-    }
+  template <std::equality_comparable Key>
+  struct collection_hasher_base {
     static bool
     equal(Key const& a, Key const& b)
     {
       return a == b;
+    }
+  };
+
+  template <typename Key>
+  concept has_std_hash_spec = requires(Key key) {
+                                {
+                                  std::hash<Key>{}(key)
+                                  } -> std::convertible_to<std::size_t>;
+                              };
+
+  template <typename Key>
+  concept has_hash_function = requires(Key key) {
+                                {
+                                  key.hash()
+                                  } -> std::convertible_to<std::size_t>;
+                              };
+
+  template <typename Key>
+  concept hashable_cache_key = has_std_hash_spec<Key> || has_hash_function<Key>;
+
+  template <hashable_cache_key Key>
+  struct collection_hasher : collection_hasher_base<Key> {
+    using collection_hasher_base<Key>::equal;
+
+    static size_t
+    hash(Key const& key)
+      requires has_std_hash_spec<Key>
+    {
+      std::hash<Key> hasher;
+      return hasher(key);
+    }
+
+    static size_t
+    hash(Key const& key)
+      requires has_hash_function<Key>
+    {
+      return key.hash();
     }
   };
 

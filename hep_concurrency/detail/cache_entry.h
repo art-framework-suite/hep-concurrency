@@ -10,14 +10,10 @@
 // ===================================================================
 
 #include "cetlib_except/exception.h"
+#include "hep_concurrency/cache_fwd.h"
 
 #include <atomic>
 #include <memory>
-
-namespace hep::concurrency {
-  template <typename Key, typename Value>
-  class cache;
-}
 
 namespace hep::concurrency::detail {
   struct entry_count {
@@ -86,7 +82,8 @@ namespace hep::concurrency::detail {
       return count_->use_count;
     }
 
-    template <typename Key, typename Value>
+    template <::hep::concurrency::detail::hashable_cache_key Key,
+              typename Value>
     friend class ::hep::concurrency::cache;
 
   private:

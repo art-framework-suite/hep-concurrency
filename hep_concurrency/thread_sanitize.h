@@ -10,15 +10,22 @@
 // ======================================================================
 
 #include "hep_concurrency/tsan.h"
+#include <concepts>
 
 #include <atomic>
 
 namespace hep {
   namespace concurrency {
+    namespace detail {
+      template <typename T, typename... Args>
+      concept sanitizer_compatible = std::constructible_from<T, Args...>;
+    }
+
     template <typename T>
     class thread_sanitize {
     public:
       template <typename... Args>
+        requires detail::sanitizer_compatible<T, Args...>
       thread_sanitize(Args&&... args)
       {
         obj_ = new T(std::forward<Args>(args)...);

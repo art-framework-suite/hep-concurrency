@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		hep_concurrency
-defaultqual	e20
+defaultqual	e28
 ####################################
 
 ####################################
@@ -249,10 +249,10 @@ libdir	fq_dir	lib
 #
 ####################################
 product		version		qual	flags		<table_format=2>
-cetlib_except	v1_09_01	-
+cetlib_except	v1_10_00	-
 tbb		v2021_9_0	-
 catch		v3_3_2		-	only_for_build
-cetmodules	v3_21_02	-	only_for_build
+cetmodules	v3_25_00	-	only_for_build
 end_product_list
 ####################################
 
@@ -308,16 +308,6 @@ end_product_list
 #
 ####################################
 qualifier	catch	tbb	cetlib_except	notes
-c14:debug	c14	c14	c14:debug
-c14:prof	c14	c14	c14:prof
-c15:debug	c15	c15	c15:debug
-c15:prof	c15	c15	c15:prof
-e20:debug	e20	e20	e20:debug
-e20:prof	e20	e20	e20:prof
-e26:debug	e26	e26	e26:debug
-e26:prof	e26	e26	e26:prof
-e27:debug	e27	e27	e27:debug
-e27:prof	e27	e27	e27:prof
 e28:debug	e28	e28	e28:debug
 e28:prof	e28	e28	e28:prof
 end_qualifier_list

@@ -3,6 +3,7 @@
 // vim: set sw=2 expandtab :
 
 #include <atomic>
+#include <concepts>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -10,6 +11,15 @@
 namespace hep::concurrency {
 
   using task_func_t = std::function<void(std::exception_ptr)>;
+
+  namespace detail {
+    template <typename T, typename... Args>
+    concept waiting_task_compatible = requires(Args&&... args) {
+                                        {
+                                          T{std::forward<Args>(args)...}
+                                          } -> std::convertible_to<task_func_t>;
+                                      };
+  }
 
   class WaitingTask {
   public:
@@ -61,7 +71,11 @@ namespace hep::concurrency {
 
   using WaitingTaskPtr = std::shared_ptr<WaitingTask>;
 
+  WaitingTaskPtr make_waiting_task(task_func_t&& t);
+  WaitingTaskPtr make_waiting_task(task_func_t&& t, unsigned n_signals);
+
   template <typename T, typename... Args>
+    requires detail::waiting_task_compatible<T, Args...>
   WaitingTaskPtr
   make_waiting_task(Args&&... args)
   {

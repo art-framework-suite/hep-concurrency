@@ -4,6 +4,7 @@
 
 #include "tbb/task_group.h"
 
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -13,6 +14,11 @@ namespace hep::concurrency {
 
   using task_t = std::function<void()>;
 
+  namespace detail {
+    template <typename F>
+    concept convertible_to_task_t = std::convertible_to<F, task_t>;
+  }
+
   class SerialTaskQueue final {
   public:
     SerialTaskQueue(tbb::task_group& group) : group_{&group} {}
@@ -21,7 +27,7 @@ namespace hep::concurrency {
     SerialTaskQueue(SerialTaskQueue const&) = delete;
     SerialTaskQueue& operator=(SerialTaskQueue const&) = delete;
 
-    template <typename F>
+    template <detail::convertible_to_task_t F>
     void push(F&& func);
 
     bool pause();
@@ -68,7 +74,7 @@ namespace hep::concurrency {
     task_t func_;
   };
 
-  template <typename F>
+  template <detail::convertible_to_task_t F>
   void
   SerialTaskQueue::push(F&& func)
   {

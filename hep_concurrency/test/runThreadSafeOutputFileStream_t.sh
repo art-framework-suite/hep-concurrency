@@ -29,7 +29,8 @@
 
 function die { echo Failure $1: status $2 ; exit $2 ; }
 
-ThreadSafeOutputFileStream_t || die "test_ThreadSafeOutputFileStream" $?
+test_exec=$1
+$test_exec || die "test_ThreadSafeOutputFileStream" $?
 for thindex in 0 1 2;
 do
     comparison="Thread index: ${thindex} Entry: 0;Thread index: ${thindex} Entry: 1;Thread index: ${thindex} Entry: 2;Thread index: ${thindex} Entry: 3;"

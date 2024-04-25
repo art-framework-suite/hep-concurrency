@@ -4,6 +4,7 @@
 // vim: set sw=2 expandtab :
 
 #include "hep_concurrency/SerialTaskQueue.h"
+#include <concepts>
 
 #include <cassert>
 #include <memory>
@@ -23,27 +24,28 @@ namespace hep::concurrency {
     SerialTaskQueueChain& operator=(SerialTaskQueueChain const&) = delete;
     SerialTaskQueueChain& operator=(SerialTaskQueueChain&&) = delete;
 
-    template <typename F>
+    template <detail::convertible_to_task_t F>
     void push(F&&);
 
   private:
-    template <typename F>
+    template <detail::convertible_to_task_t F>
     void passDown(unsigned int, F&&);
-    template <typename F>
+
+    template <detail::convertible_to_task_t F>
     void runFunc(F const&);
 
     std::recursive_mutex mutex_{};
     std::vector<std::shared_ptr<SerialTaskQueue>> queues_;
   };
 
-  template <typename F>
+  template <detail::convertible_to_task_t F>
   void
   SerialTaskQueueChain::push(F&& func)
   {
     std::lock_guard sentry{mutex_};
     assert(queues_.size() > 0);
     if (queues_.size() == 1) {
-      queues_[0]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+      queues_[0]->push([this, f = std::forward<F>(func)]() { runFunc(f); });
     } else {
       queues_[0]->push([this, f = std::forward<F>(func)]() mutable {
         passDown(1, std::forward<F>(f));
@@ -51,14 +53,14 @@ namespace hep::concurrency {
     }
   }
 
-  template <typename F>
+  template <detail::convertible_to_task_t F>
   void
   SerialTaskQueueChain::passDown(unsigned int idx, F&& func)
   {
     std::lock_guard sentry{mutex_};
     queues_[idx - 1]->pause();
     if ((idx + 1) == queues_.size()) {
-      queues_[idx]->push([this, f = std::forward<F>(func)] { runFunc(f); });
+      queues_[idx]->push([this, f = std::forward<F>(func)]() { runFunc(f); });
     } else {
       auto nxt = idx + 1;
       queues_[idx]->push([this, nxt, f = std::forward<F>(func)]() mutable {
@@ -67,7 +69,7 @@ namespace hep::concurrency {
     }
   }
 
-  template <typename F>
+  template <detail::convertible_to_task_t F>
   void
   SerialTaskQueueChain::runFunc(F const& func)
   {
