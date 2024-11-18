@@ -20,7 +20,7 @@ namespace {
     {}
 
   private:
-    int num_{};
+    int num_ [[maybe_unused]] {};
   };
 
   template <typename T>

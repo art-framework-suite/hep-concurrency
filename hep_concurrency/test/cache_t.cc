@@ -193,7 +193,7 @@ namespace {
 
   class no_eq {
   private:
-    int data;
+    int data [[maybe_unused]];
   };
 
 }
