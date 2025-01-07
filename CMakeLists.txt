@@ -37,5 +37,4 @@ find_package(Threads REQUIRED EXPORT)
 
 add_subdirectory(${PROJECT_NAME})  # source code
 
-cet_cmake_config(CONFIG_POST_TARGET_VARS
-  config/hep_concurrency-augment-HEP_CONCURRENCY.cmake)
+cet_cmake_config()
