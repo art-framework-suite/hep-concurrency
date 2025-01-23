@@ -1,6 +1,10 @@
 find_package(TBB REQUIRED EXPORT)
 find_package(cetlib_except REQUIRED EXPORT)
 
+include(CetMakeLibrary)
+include(InstallHeaders)
+include(InstallSource)
+
 cet_make_library(LIBRARY_NAME macros INTERFACE
   SOURCE
     assert_only_one_thread.h

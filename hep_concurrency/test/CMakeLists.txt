@@ -1,7 +1,10 @@
 include(CetTest)
+include(CetMake)
+
 cet_enable_asserts()
 
 find_package(Catch2 REQUIRED)
+
 
 # Put everything in a different export set.
 cet_register_export_set(SET_NAME Testing
