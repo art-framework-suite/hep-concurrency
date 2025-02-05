@@ -15,10 +15,8 @@ namespace hep::concurrency {
   namespace detail {
     template <typename T, typename... Args>
     concept waiting_task_compatible = requires(Args&&... args) {
-                                        {
-                                          T{std::forward<Args>(args)...}
-                                          } -> std::convertible_to<task_func_t>;
-                                      };
+      { T{std::forward<Args>(args)...} } -> std::convertible_to<task_func_t>;
+    };
   }
 
   class WaitingTask {

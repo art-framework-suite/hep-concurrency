@@ -38,17 +38,13 @@ namespace hep::concurrency::detail {
 
   template <typename Key>
   concept has_std_hash_spec = requires(Key key) {
-                                {
-                                  std::hash<Key>{}(key)
-                                  } -> std::convertible_to<std::size_t>;
-                              };
+    { std::hash<Key>{}(key) } -> std::convertible_to<std::size_t>;
+  };
 
   template <typename Key>
   concept has_hash_function = requires(Key key) {
-                                {
-                                  key.hash()
-                                  } -> std::convertible_to<std::size_t>;
-                              };
+    { key.hash() } -> std::convertible_to<std::size_t>;
+  };
 
   template <typename Key>
   concept hashable_cache_key = has_std_hash_spec<Key> || has_hash_function<Key>;

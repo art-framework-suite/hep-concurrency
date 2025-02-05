@@ -75,20 +75,20 @@
     std::cerr << msg.str();                                                    \
   }
 extern "C" {
-void AnnotateHappensBefore(const char*, int, void*);
-void AnnotateHappensAfter(const char*, int, void*);
-void AnnotateBenignRaceSized(const char*,
+void AnnotateHappensBefore(char const*, int, void*);
+void AnnotateHappensAfter(char const*, int, void*);
+void AnnotateBenignRaceSized(char const*,
                              int,
                              void*,
                              unsigned long,
-                             const char*);
-void AnnotateBenignRace(const char*, int, void*, const char*);
-void AnnotateIgnoreReadsBegin(const char*, int);
-void AnnotateIgnoreReadsEnd(const char*, int);
-void AnnotateIgnoreWritesBegin(const char*, int);
-void AnnotateIgnoreWritesEnd(const char*, int);
-void AnnotateIgnoreSyncBegin(const char*, int);
-void AnnotateIgnoreSyncEnd(const char*, int);
+                             char const*);
+void AnnotateBenignRace(char const*, int, void*, char const*);
+void AnnotateIgnoreReadsBegin(char const*, int);
+void AnnotateIgnoreReadsEnd(char const*, int);
+void AnnotateIgnoreWritesBegin(char const*, int);
+void AnnotateIgnoreWritesEnd(char const*, int);
+void AnnotateIgnoreSyncBegin(char const*, int);
+void AnnotateIgnoreSyncEnd(char const*, int);
 } // extern "C"
 #else // defined(__SANITIZE_THREAD__)
 #define ANNOTATE_HAPPENS_BEFORE(addr)

@@ -13,7 +13,7 @@ namespace {
     {}
 
   private:
-    int num_ [[maybe_unused]] {};
+    int num_ [[maybe_unused]]{};
   };
 
   void
@@ -25,13 +25,12 @@ namespace {
   {}
 
   template <typename T, typename... ARGS>
-  concept can_make_waiting_task =
-    requires(ARGS&&... args) {
-      hep::concurrency::make_waiting_task<T>(std::forward<ARGS>(args)...);
-    } || requires(T&& t, ARGS&&... args) {
-           hep::concurrency::make_waiting_task(std::forward<T>(t),
-                                               std::forward<ARGS>(args)...);
-         };
+  concept can_make_waiting_task = requires(ARGS&&... args) {
+    hep::concurrency::make_waiting_task<T>(std::forward<ARGS>(args)...);
+  } || requires(T&& t, ARGS&&... args) {
+    hep::concurrency::make_waiting_task(std::forward<T>(t),
+                                        std::forward<ARGS>(args)...);
+  };
 
   template <typename T, typename... ARGS>
   struct verify_waiting_task_compatible_t : std::false_type {};

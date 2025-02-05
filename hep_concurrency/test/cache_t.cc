@@ -180,7 +180,9 @@ TEST_CASE("User defined with hint")
 
 namespace {
   template <typename Key, typename Value>
-  concept can_cache = requires { { cache<Key, Value>{} }; };
+  concept can_cache = requires {
+    { cache<Key, Value>{} };
+  };
 
   struct not_hashable {
     bool
@@ -222,14 +224,15 @@ namespace {
   };
 
   template <typename Key, typename Value, typename T>
-  concept can_call_entry_for =
-  requires (cache<Key, Value> test_cache, T t)
-  { { test_cache.entry_for(t) }; };
+  concept can_call_entry_for = requires(cache<Key, Value> test_cache, T t) {
+    { test_cache.entry_for(t) };
+  };
 
   template <typename Key, typename Value, typename T>
   concept can_call_entry_for_hint =
-  requires (cache<Key, Value> test_cache, T t)
-  { { test_cache.entry_for(cache_handle<Key, Value>::invalid(), t) }; };
+    requires(cache<Key, Value> test_cache, T t) {
+      { test_cache.entry_for(cache_handle<Key, Value>::invalid(), t) };
+    };
 }
 
 TEST_CASE("entry_for() constraint enforcement (bad)")
@@ -246,6 +249,9 @@ TEST_CASE("entry_for() constraint enforcement (good)")
   REQUIRE(can_cache<test::interval_of_validity, std::string>);
   CHECK(can_call_entry_for<test::interval_of_validity, std::string, int>);
   CHECK(can_call_entry_for_hint<test::interval_of_validity, std::string, int>);
-  CHECK_FALSE(can_call_entry_for<test::interval_of_validity, std::string, std::string>);
-  CHECK_FALSE(can_call_entry_for_hint<test::interval_of_validity, std::string, std::string>);
+  CHECK_FALSE(
+    can_call_entry_for<test::interval_of_validity, std::string, std::string>);
+  CHECK_FALSE(can_call_entry_for_hint<test::interval_of_validity,
+                                      std::string,
+                                      std::string>);
 }

@@ -10,12 +10,14 @@ namespace {
   };
 
   template <typename T, typename... ARGS>
-  concept can_thread_sanitize =
-  requires (ARGS&&... args)
-  { { thread_sanitize<T>{std::forward<ARGS>(args)...} }; };
+  concept can_thread_sanitize = requires(ARGS&&... args) {
+    { thread_sanitize<T>{std::forward<ARGS>(args)...} };
+  };
 
   template <typename T, typename... ARGS>
-  constexpr bool verify_thread_sanitize(ARGS&&...) {
+  constexpr bool
+  verify_thread_sanitize(ARGS&&...)
+  {
     return can_thread_sanitize<T, ARGS...>;
   };
 }

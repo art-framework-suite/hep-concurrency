@@ -134,10 +134,8 @@ namespace hep::concurrency {
   namespace detail {
     template <typename Key, typename T>
     concept key_with_support_function = requires(Key const key, T const& t) {
-                                          {
-                                            key.supports(t)
-                                            } -> std::convertible_to<bool>;
-                                        };
+      { key.supports(t) } -> std::convertible_to<bool>;
+    };
   }
 
   template <detail::hashable_cache_key Key, typename Value>

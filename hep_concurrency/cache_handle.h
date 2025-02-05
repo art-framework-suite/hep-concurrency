@@ -50,7 +50,11 @@ namespace hep::concurrency {
 
     // Check whether handle points to valid cache entry
     bool is_valid() const noexcept;
-    explicit operator bool() const noexcept { return is_valid(); }
+    explicit
+    operator bool() const noexcept
+    {
+      return is_valid();
+    }
 
     // General access
     Value const& operator*() const;

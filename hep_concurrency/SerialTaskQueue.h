@@ -56,7 +56,11 @@ namespace hep::concurrency {
       : queue_{queue}, func_{std::move(func)}
     {}
 
-    explicit operator bool() const { return static_cast<bool>(func_); }
+    explicit
+    operator bool() const
+    {
+      return static_cast<bool>(func_);
+    }
 
     void
     operator()() const
